@@ -44,5 +44,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(remove_dupes, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(
+            remove_dupes,
+            reverse_code=migrations.RunPython.noop),
     ]

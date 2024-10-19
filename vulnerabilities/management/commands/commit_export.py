@@ -45,12 +45,16 @@ class Command(BaseCommand):
             base_path = Path(path)
 
         if not path or not base_path.is_dir():
-            raise CommandError("Enter a valid directory path to the exported data.")
+            raise CommandError(
+                "Enter a valid directory path to the exported data.")
 
         vcio_export_repo_url = os.environ.get("VULNERABLECODE_EXPORT_REPO_URL")
-        vcio_github_service_token = os.environ.get("VULNERABLECODE_GITHUB_SERVICE_TOKEN")
-        vcio_github_service_name = os.environ.get("VULNERABLECODE_GITHUB_SERVICE_NAME")
-        vcio_github_service_email = os.environ.get("VULNERABLECODE_GITHUB_SERVICE_EMAIL")
+        vcio_github_service_token = os.environ.get(
+            "VULNERABLECODE_GITHUB_SERVICE_TOKEN")
+        vcio_github_service_name = os.environ.get(
+            "VULNERABLECODE_GITHUB_SERVICE_NAME")
+        vcio_github_service_email = os.environ.get(
+            "VULNERABLECODE_GITHUB_SERVICE_EMAIL")
 
         # Check for missing environment variables
         missing_vars = []
@@ -64,7 +68,9 @@ class Command(BaseCommand):
             missing_vars.append("VULNERABLECODE_GITHUB_SERVICE_EMAIL")
 
         if missing_vars:
-            raise CommandError(f'Missing environment variables: {", ".join(missing_vars)}')
+            raise CommandError(
+                f'Missing environment variables: {
+                    ", ".join(missing_vars)}')
 
         local_dir = tempfile.mkdtemp()
         current_date = datetime.now().strftime("%Y-%m-%d")
@@ -84,7 +90,8 @@ class Command(BaseCommand):
         Signed-off-by: {vcio_github_service_name} <{vcio_github_service_email}>
         """
 
-        self.stdout.write("Committing VulnerableCode package and vulnerability data.")
+        self.stdout.write(
+            "Committing VulnerableCode package and vulnerability data.")
         repo = self.clone_repository(
             repo_url=vcio_export_repo_url,
             local_path=local_dir,
@@ -92,7 +99,8 @@ class Command(BaseCommand):
         )
 
         repo.config_writer().set_value("user", "name", vcio_github_service_name).release()
-        repo.config_writer().set_value("user", "email", vcio_github_service_email).release()
+        repo.config_writer().set_value(
+            "user", "email", vcio_github_service_email).release()
 
         self.add_changes(repo=repo, content_path=path)
 
@@ -116,7 +124,8 @@ class Command(BaseCommand):
         if os.path.exists(local_path):
             shutil.rmtree(local_path)
 
-        authenticated_repo_url = repo_url.replace("https://", f"https://{token}@")
+        authenticated_repo_url = repo_url.replace(
+            "https://", f"https://{token}@")
         return Repo.clone_from(authenticated_repo_url, local_path)
 
     def add_changes(self, repo, content_path):
@@ -133,7 +142,12 @@ class Command(BaseCommand):
                 shutil.rmtree(target_item)
             shutil.copytree(item, target_item)
 
-    def commit_and_push_changes(self, repo, branch, commit_message, remote_name="origin"):
+    def commit_and_push_changes(
+            self,
+            repo,
+            branch,
+            commit_message,
+            remote_name="origin"):
         """Commit changes and push to remote repository, return name of changed files."""
 
         repo.git.checkout("HEAD", b=branch)
@@ -161,7 +175,8 @@ class Command(BaseCommand):
             raise ValueError("Invalid GitHub repo URL")
 
         url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/pulls"
-        headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github.v3+json"}
+        headers = {"Authorization": f"token {token}",
+                   "Accept": "application/vnd.github.v3+json"}
         data = {"title": title, "head": branch, "base": "main", "body": body}
 
         response = requests.post(url, headers=headers, json=data)
@@ -170,10 +185,10 @@ class Command(BaseCommand):
             pr_response = response.json()
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Pull request created successfully: {pr_response.get('html_url')}."
-                )
-            )
+                    f"Pull request created successfully: {
+                        pr_response.get('html_url')}."))
         else:
             self.stderr.write(
-                self.style.ERROR(f"Failed to create pull request: {response.content}")
-            )
+                self.style.ERROR(
+                    f"Failed to create pull request: {
+                        response.content}"))

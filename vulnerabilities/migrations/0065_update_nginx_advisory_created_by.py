@@ -12,10 +12,9 @@ def update_created_by(apps, schema_editor):
     from vulnerabilities.pipelines.nginx_importer import NginxImporterPipeline
 
     Advisory = apps.get_model("vulnerabilities", "Advisory")
-    Advisory.objects.filter(created_by="vulnerabilities.importers.nginx.NginxImporter").update(
-        created_by=NginxImporterPipeline.pipeline_id
-    )
-
+    Advisory.objects.filter(
+        created_by="vulnerabilities.importers.nginx.NginxImporter").update(
+        created_by=NginxImporterPipeline.pipeline_id)
 
 
 def reverse_update_created_by(apps, schema_editor):
@@ -23,8 +22,7 @@ def reverse_update_created_by(apps, schema_editor):
 
     Advisory = apps.get_model("vulnerabilities", "Advisory")
     Advisory.objects.filter(created_by=NginxImporterPipeline.pipeline_id).update(
-        created_by="vulnerabilities.importers.nginx.NginxImporter"
-    )
+        created_by="vulnerabilities.importers.nginx.NginxImporter")
 
 
 class Migration(migrations.Migration):
@@ -34,5 +32,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(update_created_by, reverse_code=reverse_update_created_by),
+        migrations.RunPython(
+            update_created_by,
+            reverse_code=reverse_update_created_by),
     ]

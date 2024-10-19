@@ -6,7 +6,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("vulnerabilities", "0055_alter_packagechangelog_software_version_and_more"),
+        ("vulnerabilities",
+         "0055_alter_packagechangelog_software_version_and_more"),
     ]
 
     operations = [

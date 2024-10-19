@@ -321,7 +321,8 @@ def group_advisory_by_package(advisories_dict, cve):
             first_patched_version = vulnerability["firstPatchedVersion"]["identifier"]
             vulnerable_version_range = vulnerability["vulnerableVersionRange"]
 
-            # Check if a vulnerability for the same package is already in the output list
+            # Check if a vulnerability for the same package is already in the
+            # output list
             existing_vulnerability = next((v for v in output if v["package"] == package), None)
             if existing_vulnerability:
                 existing_vulnerability["identifiers"] += advisory_ids

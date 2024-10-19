@@ -84,7 +84,8 @@ class Reference:
     reference_id: str = ""
     reference_type: str = ""
     url: str = ""
-    severities: List[VulnerabilitySeverity] = dataclasses.field(default_factory=list)
+    severities: List[VulnerabilitySeverity] = dataclasses.field(
+        default_factory=list)
 
     def __post_init__(self):
         if not self.url:
@@ -114,8 +115,7 @@ class Reference:
             reference_type=ref["reference_type"],
             url=ref["url"],
             severities=[
-                VulnerabilitySeverity.from_dict(severity) for severity in ref["severities"]
-            ],
+                VulnerabilitySeverity.from_dict(severity) for severity in ref["severities"]],
         )
 
     @classmethod
@@ -154,7 +154,9 @@ class AffectedPackage:
 
     def __post_init__(self):
         if self.package.version:
-            raise ValueError(f"Affected Package URL {self.package!r} cannot have a version.")
+            raise ValueError(
+                f"Affected Package URL {
+                    self.package!r} cannot have a version.")
 
         if not (self.affected_version_range or self.fixed_version):
             raise ValueError(
@@ -167,8 +169,12 @@ class AffectedPackage:
         Return a Package URL corresponding to object's fixed_version
         """
         if not self.fixed_version:
-            raise ValueError(f"Affected Package {self.package!r} does not have a fixed version")
-        return update_purl_version(purl=self.package, version=str(self.fixed_version))
+            raise ValueError(
+                f"Affected Package {
+                    self.package!r} does not have a fixed version")
+        return update_purl_version(
+            purl=self.package, version=str(
+                self.fixed_version))
 
     @classmethod
     def merge(
@@ -200,7 +206,8 @@ class AffectedPackage:
                     fixed_versions.append(pkg.fixed_version)
             purls.add(pkg.package)
         if len(purls) > 1:
-            raise UnMergeablePackageError("Cannot merge with different purls", purls)
+            raise UnMergeablePackageError(
+                "Cannot merge with different purls", purls)
         return purls.pop(), list(affected_version_ranges), sorted(fixed_versions)
 
     def to_dict(self):
@@ -211,9 +218,11 @@ class AffectedPackage:
         if self.affected_version_range:
             affected_version_range = str(self.affected_version_range)
         return {
-            "package": purl_to_dict(self.package),
+            "package": purl_to_dict(
+                self.package),
             "affected_version_range": affected_version_range,
-            "fixed_version": str(self.fixed_version) if self.fixed_version else None,
+            "fixed_version": str(
+                self.fixed_version) if self.fixed_version else None,
         }
 
     @classmethod
@@ -228,12 +237,14 @@ class AffectedPackage:
         # TODO: "None" is a likely bug
         if affected_range and affected_range != "None":
             try:
-                affected_version_range = VersionRange.from_string(affected_range)
-            except:
+                affected_version_range = VersionRange.from_string(
+                    affected_range)
+            except BaseException:
                 tb = traceback.format_exc()
                 logger.error(
-                    f"Cannot create AffectedPackage with invalid or unknown range: {affected_pkg!r} with error: {tb!r}"
-                )
+                    f"Cannot create AffectedPackage with invalid or unknown range: {
+                        affected_pkg!r} with error: {
+                        tb!r}")
                 return
 
         fixed_version = affected_pkg["fixed_version"]
@@ -243,8 +254,8 @@ class AffectedPackage:
 
         if not fixed_version and not affected_version_range:
             logger.error(
-                f"Cannot create AffectedPackage without fixed version or affected range: {affected_pkg!r}"
-            )
+                f"Cannot create AffectedPackage without fixed version or affected range: {
+                    affected_pkg!r}")
             return
 
         return cls(
@@ -269,7 +280,8 @@ class AdvisoryData:
 
     aliases: List[str] = dataclasses.field(default_factory=list)
     summary: Optional[str] = ""
-    affected_packages: List[AffectedPackage] = dataclasses.field(default_factory=list)
+    affected_packages: List[AffectedPackage] = dataclasses.field(
+        default_factory=list)
     references: List[Reference] = dataclasses.field(default_factory=list)
     date_published: Optional[datetime.datetime] = None
     weaknesses: List[int] = dataclasses.field(default_factory=list)
@@ -293,8 +305,10 @@ class AdvisoryData:
         return {
             "aliases": self.aliases,
             "summary": self.summary,
-            "affected_packages": [pkg.to_dict() for pkg in self.affected_packages],
-            "references": [ref.to_dict() for ref in self.references],
+            "affected_packages": [
+                pkg.to_dict() for pkg in self.affected_packages],
+            "references": [
+                ref.to_dict() for ref in self.references],
             "date_published": self.date_published.isoformat() if self.date_published else None,
             "weaknesses": self.weaknesses,
             "url": self.url if self.url else "",
@@ -476,8 +490,9 @@ class OvalImporter(Importer):
                 severity = definition_data.get("severity")
                 if severity:
                     severities.append(
-                        VulnerabilitySeverity(system=severity_systems.GENERIC, value=severity)
-                    )
+                        VulnerabilitySeverity(
+                            system=severity_systems.GENERIC,
+                            value=severity))
                 references = [
                     Reference(url=url, severities=severities)
                     for url in definition_data["reference_urls"]
@@ -490,20 +505,22 @@ class OvalImporter(Importer):
                         vrc = RANGE_CLASS_BY_SCHEMES[pkg_metadata["type"]]
                         if affected_version_range:
                             try:
-                                affected_version_range = vrc.from_native(affected_version_range)
+                                affected_version_range = vrc.from_native(
+                                    affected_version_range)
                             except Exception as e:
                                 logger.error(
-                                    f"Failed to parse version range {affected_version_range!r} "
-                                    f"for package {package_name!r}:\n{e}"
-                                )
+                                    f"Failed to parse version range {
+                                        affected_version_range!r} " f"for package {
+                                        package_name!r}:\n{e}")
                                 continue
                         if package_name:
                             affected_packages.append(
                                 AffectedPackage(
-                                    package=self.create_purl(package_name, pkg_metadata),
+                                    package=self.create_purl(
+                                        package_name,
+                                        pkg_metadata),
                                     affected_version_range=affected_version_range,
-                                )
-                            )
+                                ))
 
                 date_published = dateparser.parse(timestamp)
                 if not date_published.tzinfo:

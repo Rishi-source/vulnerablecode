@@ -84,20 +84,25 @@ class DebianImporter(Importer):
         if response.status_code == 200:
             return response.json()
         raise Exception(
-            f"Failed to fetch data from {self.api_url!r} with status code: {response.status_code!r}"
-        )
+            f"Failed to fetch data from {
+                self.api_url!r} with status code: {
+                response.status_code!r}")
 
     def advisory_data(self) -> Iterable[AdvisoryData]:
         response = self.get_response()
         for pkg_name, records in response.items():
             yield from self.parse(pkg_name, records)
 
-    def parse(self, pkg_name: str, records: Mapping[str, Any]) -> Iterable[AdvisoryData]:
+    def parse(self,
+              pkg_name: str,
+              records: Mapping[str,
+                               Any]) -> Iterable[AdvisoryData]:
         for cve_id, record in records.items():
             affected_versions = []
             fixed_versions = []
             if not cve_id.startswith("CVE"):
-                logger.error(f"Invalid CVE ID: {cve_id} in {record} in package {pkg_name}")
+                logger.error(
+                    f"Invalid CVE ID: {cve_id} in {record} in package {pkg_name}")
                 continue
 
             # vulnerabilities starting with something else may not be public yet
@@ -107,12 +112,12 @@ class DebianImporter(Importer):
 
             releases = record["releases"].items()
             for release_name, release_record in releases:
-                version = get_item(release_record, "repositories", release_name)
+                version = get_item(
+                    release_record, "repositories", release_name)
 
                 if not version:
                     logger.error(
-                        f"Version not found for {release_name} in {record} in package {pkg_name}"
-                    )
+                        f"Version not found for {release_name} in {record} in package {pkg_name}")
                     continue
 
                 purl = PackageURL(
@@ -134,11 +139,15 @@ class DebianImporter(Importer):
             debianbug = record.get("debianbug")
             if debianbug:
                 bug_url = f"https://bugs.debian.org/cgi-bin/bugreport.cgi?bug={debianbug}"
-                references.append(Reference(url=bug_url, reference_id=str(debianbug)))
+                references.append(
+                    Reference(
+                        url=bug_url,
+                        reference_id=str(debianbug)))
             affected_versions = dedupe(affected_versions)
             fixed_versions = dedupe(fixed_versions)
             if affected_versions:
-                affected_version_range = DebianVersionRange.from_versions(affected_versions)
+                affected_version_range = DebianVersionRange.from_versions(
+                    affected_versions)
             else:
                 affected_version_range = None
             affected_packages = []

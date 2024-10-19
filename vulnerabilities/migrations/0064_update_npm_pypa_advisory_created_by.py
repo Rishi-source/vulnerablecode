@@ -13,13 +13,12 @@ def update_created_by(apps, schema_editor):
     from vulnerabilities.pipelines.pypa_importer import PyPaImporterPipeline
 
     Advisory = apps.get_model("vulnerabilities", "Advisory")
-    Advisory.objects.filter(created_by="vulnerabilities.importers.npm.NpmImporter").update(
-        created_by=NpmImporterPipeline.pipeline_id
-    )
-    Advisory.objects.filter(created_by="vulnerabilities.importers.pypa.PyPaImporter").update(
-        created_by=PyPaImporterPipeline.pipeline_id
-    )
-
+    Advisory.objects.filter(
+        created_by="vulnerabilities.importers.npm.NpmImporter").update(
+        created_by=NpmImporterPipeline.pipeline_id)
+    Advisory.objects.filter(
+        created_by="vulnerabilities.importers.pypa.PyPaImporter").update(
+        created_by=PyPaImporterPipeline.pipeline_id)
 
 
 def reverse_update_created_by(apps, schema_editor):
@@ -30,17 +29,20 @@ def reverse_update_created_by(apps, schema_editor):
     Advisory.objects.filter(created_by=NpmImporterPipeline.pipeline_id).update(
         created_by="vulnerabilities.importers.npm.NpmImporter"
     )
-    Advisory.objects.filter(created_by=PyPaImporterPipeline.pipeline_id).update(
-        created_by="vulnerabilities.importers.pypa.PyPaImporter"
-    )
+    Advisory.objects.filter(
+        created_by=PyPaImporterPipeline.pipeline_id).update(
+        created_by="vulnerabilities.importers.pypa.PyPaImporter")
 
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("vulnerabilities", "0063_alter_packagechangelog_software_version_and_more"),
+        ("vulnerabilities",
+         "0063_alter_packagechangelog_software_version_and_more"),
     ]
 
     operations = [
-        migrations.RunPython(update_created_by, reverse_code=reverse_update_created_by),
+        migrations.RunPython(
+            update_created_by,
+            reverse_code=reverse_update_created_by),
     ]

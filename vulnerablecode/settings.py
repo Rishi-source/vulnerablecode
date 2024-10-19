@@ -225,7 +225,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": REST_FRAMEWORK_DEFAULT_THROTTLE_RATES,
     "EXCEPTION_HANDLER": "vulnerabilities.throttling.throttled_exception_handler",
     "DEFAULT_PAGINATION_CLASS": "vulnerabilities.pagination.SmallResultSetPagination",
-    # Limit the load on the Database returning a small number of records by default. https://github.com/nexB/vulnerablecode/issues/819
+    # Limit the load on the Database returning a small number of records by
+    # default. https://github.com/nexB/vulnerablecode/issues/819
     "PAGE_SIZE": 10,
     # for API docs
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
@@ -273,7 +274,8 @@ SPECTACULAR_SETTINGS = {
     # shorthand to use the sidecar instead
     "SWAGGER_UI_DIST": "SIDECAR",
     "SWAGGER_UI_FAVICON_HREF": "/static/images/favicon.ico",
-    # See https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
+    # See
+    # https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/
     "SWAGGER_UI_SETTINGS": {
         "deepLinking": True,
         "displayOperationId": True,

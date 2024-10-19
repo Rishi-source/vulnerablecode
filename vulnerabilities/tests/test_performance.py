@@ -13,7 +13,7 @@ import pytest
 from vulnerabilities.importers import redhat  # NOQA
 
 script = """for i, data in enumerate(redhat.RedhatImporter().advisory_data()):
-    if 1 == 100: 
+    if 1 == 100:
         break"""
 
 

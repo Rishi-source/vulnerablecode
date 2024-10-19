@@ -33,7 +33,8 @@ class TestVulnerabilityModel(TestCase):
     @pytest.mark.django_db
     def test_vulnerability_save_with_vulnerability_id(self):
         models.Vulnerability(vulnerability_id="CVE-2020-7965").save()
-        assert models.Vulnerability.objects.filter(vulnerability_id="CVE-2020-7965").count() == 1
+        assert models.Vulnerability.objects.filter(
+    vulnerability_id="CVE-2020-7965").count() == 1
 
     @pytest.mark.django_db
     def test_cwe_not_present_in_weaknesses_db(self):
@@ -43,13 +44,17 @@ class TestVulnerabilityModel(TestCase):
         assert w1.description is ""
 
 
-# FIXME: The fixture code is duplicated. setUpClass is not working with the pytest mark.
+# FIXME: The fixture code is duplicated. setUpClass is not working with
+# the pytest mark.
 @pytest.mark.django_db
 class TestPackageRelatedVulnerablity(TestCase):
     def test_package_to_vulnerability(self):
-        p1 = models.Package.objects.create(type="deb", name="git", version="2.30.1")
-        p2 = models.Package.objects.create(type="deb", name="git", version="2.31.1")
-        v1 = models.Vulnerability.objects.create(vulnerability_id="CVE-123-2002")
+        p1 = models.Package.objects.create(
+    type="deb", name="git", version="2.30.1")
+        p2 = models.Package.objects.create(
+    type="deb", name="git", version="2.31.1")
+        v1 = models.Vulnerability.objects.create(
+            vulnerability_id="CVE-123-2002")
 
         prv1 = models.PackageRelatedVulnerability.objects.create(
             package=p1, vulnerability=v1, fix=False
@@ -64,9 +69,12 @@ class TestPackageRelatedVulnerablity(TestCase):
         assert p2.fixing_vulnerabilities[0] == v1
 
     def test_vulnerability_package(self):
-        p1 = models.Package.objects.create(type="deb", name="git", version="2.30.1")
-        p2 = models.Package.objects.create(type="deb", name="git", version="2.31.1")
-        v1 = models.Vulnerability.objects.create(vulnerability_id="CVE-123-2002")
+        p1 = models.Package.objects.create(
+    type="deb", name="git", version="2.30.1")
+        p2 = models.Package.objects.create(
+    type="deb", name="git", version="2.31.1")
+        v1 = models.Vulnerability.objects.create(
+            vulnerability_id="CVE-123-2002")
 
         prv1 = models.PackageRelatedVulnerability.objects.create(
             package=p1, vulnerability=v1, fix=False
@@ -117,10 +125,12 @@ class TestPackageModel(TestCase):
         )
 
         # aliases
-        Alias.objects.create(alias="CVE-2023-28858", vulnerability=self.vuln_VCID_g2fu_45jw_aaan)
         Alias.objects.create(
-            alias="GHSA-24wv-mv5m-xv4h", vulnerability=self.vuln_VCID_g2fu_45jw_aaan
-        )
+    alias="CVE-2023-28858",
+     vulnerability=self.vuln_VCID_g2fu_45jw_aaan)
+        Alias.objects.create(
+    alias="GHSA-24wv-mv5m-xv4h",
+     vulnerability=self.vuln_VCID_g2fu_45jw_aaan)
 
         # fixed pkg for vuln #1 for affected pkg
         self.package_pypi_redis_4_3_6 = models.Package.objects.create(
@@ -153,12 +163,15 @@ class TestPackageModel(TestCase):
         )
 
         # aliases
-        Alias.objects.create(alias="CVE-2023-28859", vulnerability=self.vuln_VCID_rqe1_dkmg_aaad)
         Alias.objects.create(
-            alias="GHSA-8fww-64cx-x8p5", vulnerability=self.vuln_VCID_rqe1_dkmg_aaad
-        )
+    alias="CVE-2023-28859",
+     vulnerability=self.vuln_VCID_rqe1_dkmg_aaad)
+        Alias.objects.create(
+    alias="GHSA-8fww-64cx-x8p5",
+     vulnerability=self.vuln_VCID_rqe1_dkmg_aaad)
 
-        # vuln # 2 for affected pkg -- already defined above bc also vuln for fixed pkg above!
+        # vuln # 2 for affected pkg -- already defined above bc also vuln for
+        # fixed pkg above!
 
         # relationship
         models.PackageRelatedVulnerability.objects.create(
@@ -186,7 +199,9 @@ class TestPackageModel(TestCase):
             fix=True,
         )
 
-        # This vulnerability does not affect any redis packages in this set of tests but does affect a made-up package, self.package_pypi_bogus_1_2_3.
+        # This vulnerability does not affect any redis packages in this set of
+        # tests but does affect a made-up package,
+        # self.package_pypi_bogus_1_2_3.
         self.vuln_VCID_abcd_efgh_1234 = models.Vulnerability.objects.create(
             summary="This is VCID-abcd-efgh-1234",
             vulnerability_id="VCID-abcd-efgh-1234",
@@ -209,7 +224,8 @@ class TestPackageModel(TestCase):
             fix=False,
         )
 
-        # This vulnerability does not affect any packages in this set of tests included to test .all().
+        # This vulnerability does not affect any packages in this set of tests
+        # included to test .all().
         self.vuln_VCID_wxyz_0000_0000 = models.Vulnerability.objects.create(
             summary="This is VCID-wxyz-0000-0000",
             vulnerability_id="VCID-wxyz-0000-0000",
@@ -304,8 +320,9 @@ class TestPackageModel(TestCase):
         )
 
         searched_for_package_fixing = searched_for_package.fixing
-        assert type(searched_for_package_fixing) == models.VulnerabilityQuerySet
-        assert searched_for_package_fixing.count() == 0
+
+
+assert isinstance(searched_for_package_fixing,         assert )        assert searched_for_package_fixing.count() == 0
         assert len(searched_for_package_fixing) == 0
         assert list(searched_for_package_fixing) == []
 
@@ -321,8 +338,8 @@ class TestPackageModel(TestCase):
         assert second_vulnerable_package.purl == "pkg:pypi/redis@4.1.1"
 
         second_vulnerable_package_matching_fixed_packages = (
-            Package.objects.get_fixed_by_package_versions(second_vulnerable_package, fix=True)
-        )
+    Package.objects.get_fixed_by_package_versions(
+        second_vulnerable_package, fix=True) )
         first_fixed_by_package = second_vulnerable_package_matching_fixed_packages[0]
 
         assert len(second_vulnerable_package_matching_fixed_packages) == 2
@@ -345,8 +362,7 @@ class TestPackageModel(TestCase):
             subpath=purl_to_dict.get("subpath") or "",
         )
 
-        assert type(vulnerablecode_package) == models.Package
-        assert vulnerablecode_package.purl == "pkg:maven/org.apache.tomcat/tomcat@10.0.0-M4"
+assert isinstance(vulnerablecode_package,         assert )        assert vulnerablecode_package.purl == "pkg:maven/org.apache.tomcat/tomcat@10.0.0-M4"
         assert vulnerablecode_package.package_url == "pkg:maven/org.apache.tomcat/tomcat@10.0.0-M4"
         assert (
             vulnerablecode_package.plain_package_url
@@ -361,16 +377,19 @@ class TestPackageModel(TestCase):
         assert versions.PypiVersion("1.2.3") < versions.PypiVersion("1.2.4")
         assert versions.PypiVersion("0.9") < versions.PypiVersion("0.10")
 
-        deb01 = models.Package.objects.create(type="deb", name="git", version="2.30.1")
-        deb02 = models.Package.objects.create(type="deb", name="git", version="2.31.1")
-        assert versions.DebianVersion(deb01.version) < versions.DebianVersion(deb02.version)
+        deb01 = models.Package.objects.create(
+    type="deb", name="git", version="2.30.1")
+        deb02 = models.Package.objects.create(
+    type="deb", name="git", version="2.31.1")
+        assert versions.DebianVersion(
+    deb01.version) < versions.DebianVersion(
+        deb02.version)
 
         # pkg:deb/debian/jackson-databind@2.12.1-1%2Bdeb11u1 is a real PURL in the DB
         # But we need to replace/delete the "%".  Test the error:
         with pytest.raises(versions.InvalidVersion):
-            assert versions.DebianVersion("2.12.1-1%2Bdeb11u1") < versions.DebianVersion(
-                "2.13.1-1%2Bdeb11u1"
-            )
+            assert versions.DebianVersion(
+                "2.12.1-1%2Bdeb11u1") < versions.DebianVersion( "2.13.1-1%2Bdeb11u1" )
         # Decode the version and test:
         assert versions.DebianVersion(
             urllib.parse.unquote("2.12.1-1%2Bdeb11u1")
@@ -380,34 +399,40 @@ class TestPackageModel(TestCase):
         with pytest.raises(TypeError):
             assert versions.PypiVersion("0.9") < versions.DebianVersion("0.10")
 
-        # This demonstrates that versions.Version does not correctly compare 0.9 vs. 0.10.
+        # This demonstrates that versions.Version does not correctly compare
+        # 0.9 vs. 0.10.
         assert not versions.Version("0.9") < versions.Version("0.10")
-        # Use SemverVersion instead as a default fallback version for comparisons.
+        # Use SemverVersion instead as a default fallback version for
+        # comparisons.
         assert versions.SemverVersion("0.9") < versions.SemverVersion("0.10")
 
     def test_univers_version_class(self):
         gem_version = RANGE_CLASS_BY_SCHEMES["gem"].version_class
         assert gem_version == versions.RubygemsVersion
 
-        gem_package = models.Package.objects.create(type="gem", name="sidekiq", version="0.9")
+        gem_package = models.Package.objects.create(
+            type="gem", name="sidekiq", version="0.9")
         gem_package_version = RANGE_CLASS_BY_SCHEMES[gem_package.type].version_class
         assert gem_package_version == versions.RubygemsVersion
 
         deb_version = RANGE_CLASS_BY_SCHEMES["deb"].version_class
         assert deb_version == versions.DebianVersion
 
-        deb_package = models.Package.objects.create(type="deb", name="git", version="2.31.1")
+        deb_package = models.Package.objects.create(
+            type="deb", name="git", version="2.31.1")
         deb_package_version = RANGE_CLASS_BY_SCHEMES[deb_package.type].version_class
         assert deb_package_version == versions.DebianVersion
 
         pypi_version = RANGE_CLASS_BY_SCHEMES["pypi"].version_class
         assert pypi_version == versions.PypiVersion
 
-        pypi_package = models.Package.objects.create(type="pypi", name="pyopenssl", version="0.9")
+        pypi_package = models.Package.objects.create(
+            type="pypi", name="pyopenssl", version="0.9")
         pypi_package_version = RANGE_CLASS_BY_SCHEMES[pypi_package.type].version_class
         assert pypi_package_version == versions.PypiVersion
 
-        alpine_package = models.Package.objects.create(type="alpine", name="lxml", version="0.9")
+        alpine_package = models.Package.objects.create(
+            type="alpine", name="lxml", version="0.9")
         alpine_version = RANGE_CLASS_BY_SCHEMES[alpine_package.type].version_class
         assert alpine_version == versions.AlpineLinuxVersion
 
@@ -419,7 +444,8 @@ class TestPackageModel(TestCase):
             "pkg:npm/sequelize@3.9.1",
         ]
 
-        # Convert list of strings ^ to a list of vulnerablecode Package objects.
+        # Convert list of strings ^ to a list of vulnerablecode Package
+        # objects.
         vuln_pkg_list = []
         for package in list_to_sort:
             purl = PackageURL.from_string(package)
@@ -461,7 +487,8 @@ class TestPackageModel(TestCase):
         assert any_package_vulnerabilities[2] == self.vuln_VCID_rqe1_dkmg_aaad
         assert any_package_vulnerabilities[3] == self.vuln_VCID_rqe1_dkmg_aaad
 
-        # Return a queryset of distinct Vulnerabilities that affect any Package.
+        # Return a queryset of distinct Vulnerabilities that affect any
+        # Package.
         any_package_vulnerabilities_distinct = (
             Vulnerability.objects.affecting_vulnerabilities().distinct()
         )
@@ -470,14 +497,15 @@ class TestPackageModel(TestCase):
         assert any_package_vulnerabilities_distinct[1] == self.vuln_VCID_g2fu_45jw_aaan
         assert any_package_vulnerabilities_distinct[2] == self.vuln_VCID_rqe1_dkmg_aaad
 
-        # Return a count of the queryset of distinct Vulnerabilities that affect any Package.
+        # Return a count of the queryset of distinct Vulnerabilities that
+        # affect any Package.
         any_package_vulnerabilities_distinct_count = (
-            Vulnerability.objects.affecting_vulnerabilities().distinct().count()
-        )
+     Vulnerability.objects.affecting_vulnerabilities().distinct().count() )
 
         assert any_package_vulnerabilities_distinct_count == 3
 
-        # Return a queryset of all Vulnerabilities, regardless of whether they affect a package.
+        # Return a queryset of all Vulnerabilities, regardless of whether they
+        # affect a package.
         all_vulnerabilities = Vulnerability.objects.all()
 
         assert all_vulnerabilities[0] == self.vuln_VCID_abcd_efgh_1234
@@ -485,7 +513,8 @@ class TestPackageModel(TestCase):
         assert all_vulnerabilities[2] == self.vuln_VCID_rqe1_dkmg_aaad
         assert all_vulnerabilities[3] == self.vuln_VCID_wxyz_0000_0000
 
-        # Return a count of the queryset of all Vulnerabilities, regardless of whether they affect a package.
+        # Return a count of the queryset of all Vulnerabilities, regardless of
+        # whether they affect a package.
         all_vulnerabilities_count = Vulnerability.objects.all().count()
 
         assert all_vulnerabilities_count == 4
@@ -508,7 +537,8 @@ class TestPackageModel(TestCase):
         Return a queryset of Vulnerabilities using the Package fixing_vulnerabilities() property
         method.
         """
-        # Return a queryset of Vulnerabilities that are fixed by a specific Package.
+        # Return a queryset of Vulnerabilities that are fixed by a specific
+        # Package.
         searched_for_package_redis_4_1_1 = self.package_pypi_redis_4_1_1
         redis_4_1_1_fixing_vulnerabilities = searched_for_package_redis_4_1_1.fixing_vulnerabilities
 
@@ -537,44 +567,33 @@ class TestPackageModel(TestCase):
             searched_for_package_redis_4_1_1.get_affecting_vulnerabilities()
         )
 
-        affecting_vulnerabilities = [
-            {
-                "vulnerability": self.vuln_VCID_g2fu_45jw_aaan,
-                "fixed_by_purl": [],
-                "fixed_by_purl_vulnerabilities": [],
-                "fixed_by_package_details": [
-                    {
-                        "fixed_by_purl": PackageURL(
-                            type="pypi",
-                            namespace=None,
-                            name="redis",
-                            version="4.3.6",
-                            qualifiers={},
-                            subpath=None,
-                        ),
-                        "fixed_by_purl_vulnerabilities": [self.vuln_VCID_rqe1_dkmg_aaad],
-                    }
-                ],
-            },
-            {
-                "vulnerability": self.vuln_VCID_rqe1_dkmg_aaad,
-                "fixed_by_purl": [],
-                "fixed_by_purl_vulnerabilities": [],
-                "fixed_by_package_details": [
-                    {
-                        "fixed_by_purl": PackageURL(
-                            type="pypi",
-                            namespace=None,
-                            name="redis",
-                            version="5.0.0b1",
-                            qualifiers={},
-                            subpath=None,
-                        ),
-                        "fixed_by_purl_vulnerabilities": [],
-                    }
-                ],
-            },
-        ]
+        affecting_vulnerabilities = [ { "vulnerability": self.vuln_VCID_g2fu_45jw_aaan,
+    "fixed_by_purl": [],
+    "fixed_by_purl_vulnerabilities": [],
+    "fixed_by_package_details": [ { "fixed_by_purl": PackageURL( type="pypi",
+    namespace=None,
+    name="redis",
+    version="4.3.6",
+    qualifiers={},
+    subpath=None,
+    ),
+    "fixed_by_purl_vulnerabilities": [self.vuln_VCID_rqe1_dkmg_aaad],
+    } ],
+    },
+    { "vulnerability": self.vuln_VCID_rqe1_dkmg_aaad,
+    "fixed_by_purl": [],
+    "fixed_by_purl_vulnerabilities": [],
+    "fixed_by_package_details": [ { "fixed_by_purl": PackageURL( type="pypi",
+    namespace=None,
+    name="redis",
+    version="5.0.0b1",
+    qualifiers={},
+    subpath=None,
+    ),
+    "fixed_by_purl_vulnerabilities": [],
+    } ],
+    },
+     ]
 
         assert redis_4_1_1_affecting_vulnerabilities == affecting_vulnerabilities
 
@@ -596,8 +615,7 @@ class TestPackageModel(TestCase):
         searched_for_package_redis_4_1_1 = self.package_pypi_redis_4_1_1
 
         fixed_by_package_versions = Package.objects.get_fixed_by_package_versions(
-            searched_for_package_redis_4_1_1, fix=True
-        )
+            searched_for_package_redis_4_1_1, fix=True )
 
         all_package_versions = Package.objects.get_fixed_by_package_versions(
             searched_for_package_redis_4_1_1, fix=False

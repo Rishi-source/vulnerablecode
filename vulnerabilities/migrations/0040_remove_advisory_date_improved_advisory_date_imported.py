@@ -18,7 +18,8 @@ class Migration(migrations.Migration):
             model_name="advisory",
             name="date_imported",
             field=models.DateTimeField(
-                blank=True, help_text="UTC Date on which the advisory was imported", null=True
-            ),
+                blank=True,
+                help_text="UTC Date on which the advisory was imported",
+                null=True),
         ),
     ]

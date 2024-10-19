@@ -166,14 +166,17 @@ def nearest_patched_package(
     Return a list of Affected Packages for each Patched package.
     """
 
-    vulnerable_packages = sorted([VersionedPackage(package) for package in vulnerable_packages])
-    resolved_packages = sorted([VersionedPackage(package) for package in resolved_packages])
+    vulnerable_packages = sorted(
+        [VersionedPackage(package) for package in vulnerable_packages])
+    resolved_packages = sorted([VersionedPackage(package)
+                               for package in resolved_packages])
 
     resolved_package_count = len(resolved_packages)
     affected_package_with_patched_package_objects = []
 
     for vulnerable_package in vulnerable_packages:
-        patched_package_index = bisect.bisect_right(resolved_packages, vulnerable_package)
+        patched_package_index = bisect.bisect_right(
+            resolved_packages, vulnerable_package)
         patched_package = None
         if patched_package_index < resolved_package_count:
             patched_package = resolved_packages[patched_package_index]
@@ -182,13 +185,13 @@ def nearest_patched_package(
             AffectedPackage(
                 vulnerable_package=vulnerable_package.purl,
                 patched_package=patched_package.purl if patched_package else None,
-            )
-        )
+            ))
 
     return affected_package_with_patched_package_objects
 
 
-# TODO: Replace this with combination of @classmethod and @property after upgrading to python 3.9
+# TODO: Replace this with combination of @classmethod and @property after
+# upgrading to python 3.9
 class classproperty(object):
     def __init__(self, fget):
         self.fget = fget
@@ -351,8 +354,8 @@ def resolve_version_range(
                 unaffected_versions.append(package_version)
         except Exception:
             logger.error(
-                f"Invalid version range constraints {affected_version_range.constraints!r}"
-            )
+                f"Invalid version range constraints {
+                    affected_version_range.constraints!r}")
             continue
     return affected_versions, unaffected_versions
 
@@ -364,7 +367,10 @@ def fetch_response(url):
     response = requests.get(url)
     if response.status_code == HTTPStatus.OK:
         return response
-    raise Exception(f"Failed to fetch data from {url!r} with status code: {response.status_code!r}")
+    raise Exception(
+        f"Failed to fetch data from {
+            url!r} with status code: {
+            response.status_code!r}")
 
 
 # This should be a method on PackageURL
@@ -417,7 +423,10 @@ def clean_nginx_git_tag(tag):
     return tag
 
 
-def is_vulnerable_nginx_version(version, affected_version_range, fixed_versions):
+def is_vulnerable_nginx_version(
+        version,
+        affected_version_range,
+        fixed_versions):
     """
     Return True if the ``version`` Version for nginx is vulnerable according to
     the nginx approach.
@@ -439,7 +448,8 @@ def is_vulnerable_nginx_version(version, affected_version_range, fixed_versions)
           else the version is vulnerable."
 
     """
-    if version in NginxVersionRange.from_string(affected_version_range.to_string()):
+    if version in NginxVersionRange.from_string(
+            affected_version_range.to_string()):
         for fixed_version in fixed_versions:
             if version.value.minor == fixed_version.value.minor and version >= fixed_version:
                 return False

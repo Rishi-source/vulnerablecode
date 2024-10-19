@@ -69,7 +69,8 @@ def parse_advisory_data(raw_data, file, base_path) -> AdvisoryData:
     database_id = md_list[0][1::]
     summary = md_dict.get(database_id[1::]) or []
     description = md_dict.get("## Description") or []
-    impact = md_dict.get("## Impact")  # not used but can be used to get severity
+    # not used but can be used to get severity
+    impact = md_dict.get("## Impact")
     exploit_ability = md_dict.get("## Exploitability")  # not used
     cve_ref = md_dict.get("## CVE Reference") or []
     tech_details = md_dict.get("## Technical Details")  # not used
@@ -107,7 +108,7 @@ def matcher_url(ref) -> str:
     """
     Returns URL of the reference markup from reference url in Markdown format
     """
-    markup_regex = "\[([^\[]+)]\(\s*(http[s]?://.+)\s*\)"
+    markup_regex = "\\[([^\\[]+)]\\(\\s*(http[s]?://.+)\\s*\\)"
     matched_markup = re.findall(markup_regex, ref)
     if matched_markup:
         return matched_markup[0][1]

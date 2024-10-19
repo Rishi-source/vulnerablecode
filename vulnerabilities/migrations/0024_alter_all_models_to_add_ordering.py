@@ -12,26 +12,50 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='advisory',
-            options={'ordering': ['aliases', 'date_published', 'unique_content_id']},
+            options={
+                'ordering': [
+                    'aliases',
+                    'date_published',
+                    'unique_content_id']},
         ),
         migrations.AlterModelOptions(
             name='package',
-            options={'ordering': ['type', 'namespace', 'name', 'version', 'qualifiers', 'subpath']},
+            options={
+                'ordering': [
+                    'type',
+                    'namespace',
+                    'name',
+                    'version',
+                    'qualifiers',
+                    'subpath']},
         ),
         migrations.AlterModelOptions(
             name='packagerelatedvulnerability',
-            options={'ordering': ['package', 'vulnerability'], 'verbose_name_plural': 'PackageRelatedVulnerabilities'},
+            options={
+                'ordering': [
+                    'package',
+                    'vulnerability'],
+                'verbose_name_plural': 'PackageRelatedVulnerabilities'},
         ),
         migrations.AlterModelOptions(
             name='vulnerability',
-            options={'ordering': ['vulnerability_id'], 'verbose_name_plural': 'Vulnerabilities'},
+            options={
+                'ordering': ['vulnerability_id'],
+                'verbose_name_plural': 'Vulnerabilities'},
         ),
         migrations.AlterModelOptions(
             name='vulnerabilityrelatedreference',
-            options={'ordering': ['vulnerability', 'reference']},
+            options={
+                'ordering': [
+                    'vulnerability',
+                    'reference']},
         ),
         migrations.AlterModelOptions(
             name='vulnerabilityseverity',
-            options={'ordering': ['reference', 'scoring_system', 'value']},
+            options={
+                'ordering': [
+                    'reference',
+                    'scoring_system',
+                    'value']},
         ),
     ]

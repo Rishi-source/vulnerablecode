@@ -103,8 +103,7 @@ def parse_cve_advisory(raw_data, advisory_url):
                     vector_string, decision = ssvc_calculator(content)
                     scoring_system = vulnrichment_scoring_system[metric_type][other_types]
                     severity = VulnerabilitySeverity(
-                        system=scoring_system, value=decision, scoring_elements=vector_string
-                    )
+     system=scoring_system, value=decision, scoring_elements=vector_string)
                     severities.append(severity)
                 # ignore kev
             else:
@@ -112,21 +111,24 @@ def parse_cve_advisory(raw_data, advisory_url):
                 base_score = metric_value.get("baseScore")
                 scoring_system = vulnrichment_scoring_system[metric_type]
                 severity = VulnerabilitySeverity(
-                    system=scoring_system, value=base_score, scoring_elements=vector_string
-                )
+    system=scoring_system,
+    value=base_score,
+     scoring_elements=vector_string)
                 severities.append(severity)
 
     # Extract references cpes and ignore affected products
     cpes = set()
     for affected_product in cna_data.get("affected", []):
-        if type(affected_product) != dict:
-            continue
+
+
+if not isinstance(affected_product,         if )            continue
         cpes.update(affected_product.get("cpes") or [])
 
     references = []
     for ref in cna_data.get("references", []):
         # https://github.com/CVEProject/cve-schema/blob/main/schema/tags/reference-tags.json
-        # We removed all unwanted reference types and set the default reference type to 'OTHER'.
+        # We removed all unwanted reference types and set the default reference
+        # type to 'OTHER'.
         ref_type = VulnerabilityReference.OTHER
         vul_ref_types = {
             "exploit": VulnerabilityReference.EXPLOIT,
@@ -194,7 +196,8 @@ def ssvc_calculator(ssvc_data):
     timestamp = ssvc_data.get("timestamp")
 
     # Extract the options into a dictionary
-    options_dict = {k: v.lower() for option in options for k, v in option.items()}
+    options_dict = {k: v.lower()
+                               for option in options for k, v in option.items()}
 
     # We copied the table value from this link.
     # https://www.cisa.gov/sites/default/files/publications/cisa-ssvc-guide%20508c.pdf
@@ -294,7 +297,8 @@ def ssvc_calculator(ssvc_data):
         ssvc_vector += f"D:{decision_values.get(decision)}/"
 
     if timestamp:
-        timestamp_formatted = dateparser.parse(timestamp).strftime("%Y-%m-%dT%H:%M:%SZ")
+        timestamp_formatted = dateparser.parse(
+            timestamp).strftime("%Y-%m-%dT%H:%M:%SZ")
 
         ssvc_vector += f"{timestamp_formatted}/"
     return ssvc_vector, decision

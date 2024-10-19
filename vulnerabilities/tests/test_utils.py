@@ -92,15 +92,15 @@ cves: [CVE-2042-1337]""",
 
 def test_get_item():
     d1 = {"a": {"b": {"c": None}}}
-    assert get_item(d1, "a", "b", "c", "d") == None
+    assert get_item(d1, "a", "b", "c", "d") is None
     d2 = {"a": {"b": {"c": {"d": None}}}}
-    assert get_item(d2, "a", "b", "c", "e") == None
+    assert get_item(d2, "a", "b", "c", "e") is None
     d3 = ["a", "b", "c", "d"]
-    assert get_item(d3, "a", "b") == None
+    assert get_item(d3, "a", "b") is None
     d4 = {"a": {"b": {"c": {"d": []}}}}
-    assert get_item(d4, "a", "b", "c", "d", "e") == None
+    assert get_item(d4, "a", "b", "c", "d", "e") is None
     d5 = {"a": {"b": {"c": "d"}}}
-    assert get_item(d5, "a", "b", "c", "d") == None
+    assert get_item(d5, "a", "b", "c", "d") is None
     assert get_item(d5, "a", "b", "c") == "d"
 
 

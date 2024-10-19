@@ -28,8 +28,7 @@ class Migration(migrations.Migration):
         )
         for duplicate in duplicates:
             unique_fields_data = {
-                uniqe_field: duplicate[uniqe_field] for uniqe_field in unique_fields
-            }
+                uniqe_field: duplicate[uniqe_field] for uniqe_field in unique_fields}
             # Get all rows with the same unique_fields_data
             # exclude the latest one
             # and delete rest of them
@@ -40,4 +39,7 @@ class Migration(migrations.Migration):
             )
 
     # sepecifying migrations.RunPython.noop as reverse_code
-    operations = [migrations.RunPython(remove_duplicate_rows, migrations.RunPython.noop)]
+    operations = [
+        migrations.RunPython(
+            remove_duplicate_rows,
+            migrations.RunPython.noop)]

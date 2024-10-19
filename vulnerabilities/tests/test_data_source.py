@@ -138,7 +138,8 @@ def test_git_importer_clone(git_importer):
             mock_delete.assert_called_once()
 
 
-# Here we use a modified copy of org.opensuse.CVE-2008-5679.xml -- the test versions are modified to illustrate sort order.
+# Here we use a modified copy of org.opensuse.CVE-2008-5679.xml -- the
+# test versions are modified to illustrate sort order.
 def test_ovaltest_sorting():
     xml_doc = ET.parse(
         os.path.join(TEST_DATA_01, "org.opensuse.CVE-2008-5679-modified-versions.xml")

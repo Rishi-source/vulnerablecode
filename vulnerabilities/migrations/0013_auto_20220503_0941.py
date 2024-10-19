@@ -2,6 +2,7 @@ from django.db import migrations
 
 from django.utils.http import int_to_base36
 
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -12,7 +13,9 @@ class Migration(migrations.Migration):
         Vulnerabilities = apps.get_model("vulnerabilities", "Vulnerability")
         for vulnerability in Vulnerabilities.objects.all():
             if not vulnerability.vulnerability_id:
-                vulnerability.vulnerability_id = f"VULCOID-{int_to_base36(vulnerability.id).upper()}"
+                vulnerability.vulnerability_id = f"VULCOID-{
+                    int_to_base36(
+                        vulnerability.id).upper()}"
                 vulnerability.save()
 
     operations = [

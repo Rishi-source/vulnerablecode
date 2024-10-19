@@ -64,8 +64,10 @@ class ValidVersionImprover(Improver):
     @property
     def interesting_advisories(self) -> QuerySet:
         if issubclass(self.importer, VulnerableCodeBaseImporterPipeline):
-            return Advisory.objects.filter(Q(created_by=self.importer.pipeline_id)).paginated()
-        return Advisory.objects.filter(Q(created_by=self.importer.qualified_name)).paginated()
+            return Advisory.objects.filter(
+                Q(created_by=self.importer.pipeline_id)).paginated()
+        return Advisory.objects.filter(
+            Q(created_by=self.importer.qualified_name)).paginated()
 
     def get_package_versions(
         self, package_url: PackageURL, until: Optional[datetime] = None
@@ -82,7 +84,9 @@ class ValidVersionImprover(Improver):
 
         return versions_before_until
 
-    def get_inferences(self, advisory_data: AdvisoryData) -> Iterable[Inference]:
+    def get_inferences(
+            self,
+            advisory_data: AdvisoryData) -> Iterable[Inference]:
         """
         Yield Inferences for the given advisory data
         """
@@ -92,10 +96,11 @@ class ValidVersionImprover(Improver):
 
         try:
             purl, affected_version_ranges, fixed_versions = AffectedPackage.merge(
-                advisory_data.affected_packages
-            )
+                advisory_data.affected_packages)
         except UnMergeablePackageError:
-            logger.error(f"Cannot merge with different purls {advisory_data.affected_packages!r}")
+            logger.error(
+                f"Cannot merge with different purls {
+                    advisory_data.affected_packages!r}")
             mergable = False
 
         if not mergable:
@@ -187,12 +192,18 @@ class ValidVersionImprover(Improver):
         )
 
         affected_purls = list(
-            self.expand_verion_range_to_purls(pkg_type, pkg_namespace, pkg_name, aff_vers)
-        )
+            self.expand_verion_range_to_purls(
+                pkg_type,
+                pkg_namespace,
+                pkg_name,
+                aff_vers))
 
         unaffected_purls = list(
-            self.expand_verion_range_to_purls(pkg_type, pkg_namespace, pkg_name, unaff_vers)
-        )
+            self.expand_verion_range_to_purls(
+                pkg_type,
+                pkg_namespace,
+                pkg_name,
+                unaff_vers))
 
         affected_packages: List[LegacyAffectedPackage] = nearest_patched_package(
             vulnerable_packages=affected_purls, resolved_packages=unaffected_purls
@@ -209,7 +220,12 @@ class ValidVersionImprover(Improver):
                 fixed_purl=fixed_package,
             )
 
-    def expand_verion_range_to_purls(self, pkg_type, pkg_namespace, pkg_name, versions):
+    def expand_verion_range_to_purls(
+            self,
+            pkg_type,
+            pkg_namespace,
+            pkg_name,
+            versions):
         for version in versions:
             yield PackageURL(type=pkg_type, namespace=pkg_namespace, name=pkg_name, version=version)
 
@@ -222,9 +238,12 @@ class NginxBasicImprover(Improver):
 
     @property
     def interesting_advisories(self) -> QuerySet:
-        return Advisory.objects.filter(created_by=NginxImporterPipeline.pipeline_id).paginated()
+        return Advisory.objects.filter(
+            created_by=NginxImporterPipeline.pipeline_id).paginated()
 
-    def get_inferences(self, advisory_data: AdvisoryData) -> Iterable[Inference]:
+    def get_inferences(
+            self,
+            advisory_data: AdvisoryData) -> Iterable[Inference]:
         all_versions = list(self.fetch_nginx_version_from_git_tags())
         yield from self.get_inferences_from_versions(
             advisory_data=advisory_data, all_versions=all_versions
@@ -239,8 +258,7 @@ class NginxBasicImprover(Improver):
 
         try:
             purl, affected_version_ranges, fixed_versions = AffectedPackage.merge(
-                advisory_data.affected_packages
-            )
+                advisory_data.affected_packages)
         except UnMergeablePackageError:
             logger.error(
                 f"NginxBasicImprover: Cannot merge with different purls: "
@@ -258,13 +276,15 @@ class NginxBasicImprover(Improver):
                     affected_version_range=affected_version_range,
                     fixed_versions=fixed_versions,
                 ):
-                    new_purl = update_purl_version(purl=purl, version=str(version))
+                    new_purl = update_purl_version(
+                        purl=purl, version=str(version))
                     affected_purls.append(new_purl)
 
         # TODO: This also yields with a lower fixed version, maybe we should
         # only yield fixes that are upgrades ?
         for fixed_version in fixed_versions:
-            fixed_purl = update_purl_version(purl=purl, version=str(fixed_version))
+            fixed_purl = update_purl_version(
+                purl=purl, version=str(fixed_version))
 
             yield Inference.from_advisory_data(
                 advisory_data,

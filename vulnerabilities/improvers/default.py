@@ -48,13 +48,16 @@ class DefaultImprover(Improver):
             )
         return Advisory.objects.all().order_by("-date_collected").paginated()
 
-    def get_inferences(self, advisory_data: AdvisoryData) -> Iterable[Inference]:
+    def get_inferences(
+            self,
+            advisory_data: AdvisoryData) -> Iterable[Inference]:
         if not advisory_data:
             return []
 
         if advisory_data.affected_packages:
             for affected_package in advisory_data.affected_packages:
-                # To deal with multiple fixed versions in a single affected package
+                # To deal with multiple fixed versions in a single affected
+                # package
                 affected_purls, fixed_purls = get_exact_purls(affected_package)
                 if not fixed_purls:
                     yield Inference(
@@ -84,7 +87,8 @@ class DefaultImprover(Improver):
             )
 
 
-def get_exact_purls(affected_package: AffectedPackage) -> Tuple[List[PackageURL], PackageURL]:
+def get_exact_purls(
+        affected_package: AffectedPackage) -> Tuple[List[PackageURL], PackageURL]:
     """
     Return a list of affected purls and the fixed package found in the ``affected_package``
     AffectedPackage disregarding any ranges.
@@ -119,7 +123,8 @@ def get_exact_purls(affected_package: AffectedPackage) -> Tuple[List[PackageURL]
             range_versions = [c.version for c in vr.constraints if c]
             # Any version that's not affected by a vulnerability is considered
             # fixed.
-            fixed_versions = [c.version for c in vr.constraints if c and c.comparator == "!="]
+            fixed_versions = [
+                c.version for c in vr.constraints if c and c.comparator == "!="]
             resolved_versions = [v for v in range_versions if v and v in vr]
             for version in resolved_versions:
                 affected_purl = update_purl_version(
@@ -136,7 +141,10 @@ def get_exact_purls(affected_package: AffectedPackage) -> Tuple[List[PackageURL]
         ]
         return affected_purls, fixed_purls
     except Exception as e:
-        logger.error(f"Failed to get exact purls for: {affected_package!r} with error: {e!r}")
+        logger.error(
+            f"Failed to get exact purls for: {
+                affected_package!r} with error: {
+                e!r}")
         return [], []
 
 

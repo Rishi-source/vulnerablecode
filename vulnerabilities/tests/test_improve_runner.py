@@ -211,7 +211,7 @@ def test_process_inference_idempotency_with_different_improver_names():
 
 @pytest.mark.django_db
 def test_get_or_created_vulnerability_and_aliases_with_empty_aliases():
-    assert get_or_create_vulnerability_and_aliases(aliases=[], summary="EMPTY ALIASES") == None
+    assert get_or_create_vulnerability_and_aliases(aliases=[], summary="EMPTY ALIASES") is None
 
 
 @pytest.mark.django_db

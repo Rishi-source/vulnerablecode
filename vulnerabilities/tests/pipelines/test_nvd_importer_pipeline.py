@@ -26,7 +26,10 @@ def sorted_advisory_data(advisory_data):
     Return ``advisory_data`` of AdvisoryData mappings where each mapping nested
     list is sorted for stable testing results.
     """
-    sorter = lambda dct: tuple(dct.items())
+
+    def sorter(dct):
+        return tuple(dct.items())
+
     for data in advisory_data:
         data["aliases"] = sorted(data["aliases"])
         data["affected_packages"] = sorted(data["affected_packages"], key=sorter)

@@ -118,28 +118,28 @@ def get_casesensitive_slug(path, package_slug):
                 "pageSize": 100,
             },
             "query": """
-            fragment TreeEntry on Entry { 
-                flatPath 
-            } 
-            query getPaginatedTree($projectPath: ID!, $path: String, $ref: String!, $nextPageCursor: String) { 
-                project(fullPath: $projectPath) { 
-                    repository { 
-                        paginatedTree(path: $path, ref: $ref, after: $nextPageCursor) { 
-                            pageInfo { 
+            fragment TreeEntry on Entry {
+                flatPath
+            }
+            query getPaginatedTree($projectPath: ID!, $path: String, $ref: String!, $nextPageCursor: String) {
+                project(fullPath: $projectPath) {
+                    repository {
+                        paginatedTree(path: $path, ref: $ref, after: $nextPageCursor) {
+                            pageInfo {
                             endCursor
                             startCursor
-                            hasNextPage 
-                            } 
-                        nodes { 
-                            trees { 
-                                nodes { 
-                                    ...TreeEntry 
-                                    } 
-                                } 
-                            } 
-                        } 
-                    } 
-                } 
+                            hasNextPage
+                            }
+                        nodes {
+                            trees {
+                                nodes {
+                                    ...TreeEntry
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             } """,
         }
     ]
@@ -155,7 +155,8 @@ def get_casesensitive_slug(path, package_slug):
             if slug_flatpath.lower() == package_slug.lower():
                 return slug_flatpath
 
-            # If the namespace/subfolder contains multiple packages, then progressive transverse through folders tree
+            # If the namespace/subfolder contains multiple packages, then
+            # progressive transverse through folders tree
             if package_slug.lower().startswith(slug_flatpath.lower()):
                 return get_casesensitive_slug(slug_flatpath, package_slug)
 

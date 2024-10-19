@@ -132,7 +132,8 @@ class OvalDocument(object):
     #     http://oval.mitre.org/XMLSchema/oval-definitions-5#independent independent-definitions-schema.xsd
     #     http://oval.mitre.org/XMLSchema/oval-definitions-5#solaris solaris-definitions-schema.xsd
     #     http://oval.mitre.org/XMLSchema/oval-common-5 oval-common-schema.xsd
-    #     http://oval.mitre.org/XMLSchema/oval-definitions-5#unix unix-definitions-schema.xsd">^M
+    # http://oval.mitre.org/XMLSchema/oval-definitions-5#unix
+    # unix-definitions-schema.xsd">^M
 
     @staticmethod
     def indent(elem, level=0):
@@ -246,7 +247,7 @@ class OvalDocument(object):
             if not self.tree:
                 return False
 
-            ### TODO:  Add all necessary namespaces
+            # TODO:  Add all necessary namespaces
             self.tree.write(filename, "UTF-8", True, OvalDocument.NS_DEFAULT, "xml")
 
         except Exception:
@@ -769,7 +770,7 @@ class OvalElement(object):
     def __lt__(self, other):
         try:
             return int(self.element.get("version")) < int(other.element.get("version"))
-        except:
+        except BaseException:
             return NotImplemented
 
     def incrementVersion(self):
@@ -798,7 +799,8 @@ class OvalElement(object):
             position = position + 1
             index = ovalid[position:]
 
-            # Apply the modulus function to determine which bucket it belongs to
+            # Apply the modulus function to determine which bucket it belongs
+            # to
             return int(int(index) / 1000 + 1) * 1000
             # Or another way to do it:
         #             sequence = int(index)
@@ -853,7 +855,8 @@ class OvalElement(object):
         if not self.element or self.element is None:
             return None
 
-        # Check if this node name is prefixed by a URI, in which case return every after the URI
+        # Check if this node name is prefixed by a URI, in which case return
+        # every after the URI
         if "}" in self.element.tag:
             return str(self.element.tag).rsplit("}", 1)[1]
 
@@ -872,7 +875,8 @@ class OvalElement(object):
         if not tag or tag is None:
             return None
 
-        # If the oval ID does not contain a namespace, then we can't determine the schema shortname
+        # If the oval ID does not contain a namespace, then we can't determine
+        # the schema shortname
         if not "}" in tag:
             return None
 
@@ -896,13 +900,14 @@ class OvalElement(object):
         if not tag or tag is None:
             return None
 
-        # If the oval ID does not contain a namespace, then we can't determine the schema shortname
+        # If the oval ID does not contain a namespace, then we can't determine
+        # the schema shortname
         if not "}" in tag:
             return None
 
         try:
             schema = tag.rsplit("}", 1)[0]
-            if not "#" in schema:
+            if "#" not in schema:
                 return None
             return schema.rsplit("#", 1)[1].strip()
         except Exception:

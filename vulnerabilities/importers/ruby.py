@@ -39,8 +39,8 @@ class RubyImporter(Importer):
     yourself, upon submission you hereby agree to release it into the public
     domain.
 
-    The data imported from the ruby-advisory-db have been filtered to exclude 
-    any non-public domain data from the data copyrighted by the Open 
+    The data imported from the ruby-advisory-db have been filtered to exclude
+    any non-public domain data from the data copyrighted by the Open
     Source Vulnerability Database (http://osvdb.org).
 
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR

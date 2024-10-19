@@ -40,7 +40,8 @@ class GithubOSVImporter(Importer):
         try:
             self.clone(repo_url=self.repo_url)
             base_path = Path(self.vcs_response.dest_dir)
-            # filter out non-github-reviewed files and only keep the files end-with .json
+            # filter out non-github-reviewed files and only keep the files
+            # end-with .json
             advisory_dirs = base_path / "advisories/github-reviewed"
             for file in advisory_dirs.glob("**/*.json"):
                 advisory_url = get_advisory_url(

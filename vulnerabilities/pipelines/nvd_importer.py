@@ -169,7 +169,8 @@ class CveItem:
         # In 99% of cases len(cve_item['cve']['description']['description_data']) == 1 , so
         # this usually returns  cve_item['cve']['description']['description_data'][0]['value']
         # In the remaining 1% cases this returns the longest summary.
-        # FIXME: we should retun the full description WITH the summry as the first line instead
+        # FIXME: we should retun the full description WITH the summry as the
+        # first line instead
         summaries = []
         for desc in get_item(self.cve_item, "cve", "description", "description_data") or []:
             if desc.get("value"):
@@ -234,7 +235,8 @@ class CveItem:
         """
         Return a list unique of reference URLs.
         """
-        # FIXME: we should also collect additional data from the references such as tags and ids
+        # FIXME: we should also collect additional data from the references
+        # such as tags and ids
 
         urls = []
         for reference in get_item(self.cve_item, "cve", "references", "reference_data") or []:
@@ -248,7 +250,8 @@ class CveItem:
         """
         Return a list of AdvisoryReference.
         """
-        # FIXME: we should also collect additional data from the references such as tags and ids
+        # FIXME: we should also collect additional data from the references
+        # such as tags and ids
         references = []
 
         # we track each CPE as a reference for now
@@ -256,7 +259,8 @@ class CveItem:
             cpe_url = f"https://nvd.nist.gov/vuln/search/results?adv_search=true&isCpeNameSearch=true&query={cpe}"
             references.append(Reference(reference_id=cpe, url=cpe_url))
 
-        # FIXME: we also add the CVE proper as a reference, but is this correct?
+        # FIXME: we also add the CVE proper as a reference, but is this
+        # correct?
         references.append(
             Reference(
                 url=f"https://nvd.nist.gov/vuln/detail/{self.cve_id}",

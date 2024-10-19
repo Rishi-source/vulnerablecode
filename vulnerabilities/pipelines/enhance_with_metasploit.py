@@ -35,7 +35,9 @@ class MetasploitImproverPipeline(VulnerableCodePipeline):
             response.raise_for_status()
         except requests.exceptions.HTTPError as http_err:
             self.log(
-                f"Failed to fetch the Metasploit Exploits: {url} with error {http_err!r}:\n{traceback_format_exc()}",
+                f"Failed to fetch the Metasploit Exploits: {url} with error {
+                    http_err!r}:\n{
+                    traceback_format_exc()}",
                 level=logging.ERROR,
             )
             raise
@@ -44,25 +46,30 @@ class MetasploitImproverPipeline(VulnerableCodePipeline):
 
     def add_vulnerability_exploits(self):
         fetched_exploit_count = len(self.metasploit_data)
-        self.log(f"Enhancing the vulnerability with {fetched_exploit_count:,d} exploit records")
+        self.log(
+            f"Enhancing the vulnerability with {
+                fetched_exploit_count:,d} exploit records")
 
         vulnerability_exploit_count = 0
-        progress = LoopProgress(total_iterations=fetched_exploit_count, logger=self.log)
+        progress = LoopProgress(
+            total_iterations=fetched_exploit_count,
+            logger=self.log)
         for _, record in progress.iter(self.metasploit_data.items()):
             vulnerability_exploit_count += add_vulnerability_exploit(
                 record=record,
                 logger=self.log,
             )
-        self.log(f"Successfully added {vulnerability_exploit_count:,d} vulnerability exploit")
+        self.log(
+            f"Successfully added {
+                vulnerability_exploit_count:,d} vulnerability exploit")
 
 
 def add_vulnerability_exploit(record, logger):
     vulnerabilities = set()
     references = record.get("references", [])
 
-    interesting_references = [
-        ref for ref in references if not ref.startswith("OSVDB") and not ref.startswith("URL-")
-    ]
+    interesting_references = [ref for ref in references if not ref.startswith(
+        "OSVDB") and not ref.startswith("URL-")]
 
     if not interesting_references:
         return 0
@@ -92,7 +99,9 @@ def add_vulnerability_exploit(record, logger):
             source_date_published = dateparser.parse(disclosure_date).date()
         except ValueError as e:
             logger(
-                f"Error while parsing date {disclosure_date} with error {e!r}:\n{traceback_format_exc()}",
+                f"Error while parsing date {disclosure_date} with error {
+                    e!r}:\n{
+                    traceback_format_exc()}",
                 level=logging.ERROR,
             )
 

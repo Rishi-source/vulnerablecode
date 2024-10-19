@@ -60,7 +60,6 @@ from vulntotal.vulntotal_utils import get_item
     required=False,
     help="List available datasources.",
 )
-
 # hidden debug options
 @click.option(
     "-e",
@@ -495,7 +494,8 @@ def compare(grouped_by_cve):
         for datasource, table in board.items():
             if maximum == 0:
                 # NA if only one advisory and nothing to compare with.
-                # TC (Total Collision) i.e no two advisory agree on common fixed or affected version.
+                # TC (Total Collision) i.e no two advisory agree on common
+                # fixed or affected version.
                 advisories[datasource][0]["score"] = "TC" if datasource_count > 1 else "NA"
                 continue
             datasource_score = (sum(table.values()) / maximum) * 100
@@ -534,7 +534,9 @@ def get_texttable(no_group=False, no_compare=False):
     terminal_width = os.get_terminal_size().columns
     line_factor = terminal_width / 100
 
-    column_size = lambda f: math.floor(f * quantum * line_factor)
+    def column_size(f):
+        return math.floor(f * quantum * line_factor)
+
     column_7x = column_size(7)
     column_17x = column_size(17)
     column_15x = column_size(15)

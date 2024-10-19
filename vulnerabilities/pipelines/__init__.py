@@ -55,7 +55,8 @@ class VulnerableCodeBaseImporterPipeline(VulnerableCodePipeline):
         Also override the ``steps`` and ``advisory_confidence`` as needed.
     """
 
-    pipeline_id = None  # Unique Pipeline ID, this should be the name of pipeline module.
+    # Unique Pipeline ID, this should be the name of pipeline module.
+    pipeline_id = None
     license_url = None
     spdx_license_expression = None
     repo_url = None
@@ -94,7 +95,9 @@ class VulnerableCodeBaseImporterPipeline(VulnerableCodePipeline):
         if estimated_advisory_count > 0:
             self.log(f"Collecting {estimated_advisory_count:,d} advisories")
 
-        progress = LoopProgress(total_iterations=estimated_advisory_count, logger=self.log)
+        progress = LoopProgress(
+            total_iterations=estimated_advisory_count,
+            logger=self.log)
         for advisory in progress.iter(self.collect_advisories()):
             if _obj := insert_advisory(
                 advisory=advisory,
@@ -103,7 +106,9 @@ class VulnerableCodeBaseImporterPipeline(VulnerableCodePipeline):
             ):
                 collected_advisory_count += 1
 
-        self.log(f"Successfully collected {collected_advisory_count:,d} advisories")
+        self.log(
+            f"Successfully collected {
+                collected_advisory_count:,d} advisories")
 
     def import_new_advisories(self):
         new_advisories = Advisory.objects.filter(
@@ -116,13 +121,17 @@ class VulnerableCodeBaseImporterPipeline(VulnerableCodePipeline):
         self.log(f"Importing {new_advisories_count:,d} new advisories")
 
         imported_advisory_count = 0
-        progress = LoopProgress(total_iterations=new_advisories_count, logger=self.log)
+        progress = LoopProgress(
+            total_iterations=new_advisories_count,
+            logger=self.log)
         for advisory in progress.iter(new_advisories.paginated()):
             self.import_advisory(advisory=advisory)
             if advisory.date_imported:
                 imported_advisory_count += 1
 
-        self.log(f"Successfully imported {imported_advisory_count:,d} new advisories")
+        self.log(
+            f"Successfully imported {
+                imported_advisory_count:,d} new advisories")
 
     def import_advisory(self, advisory: Advisory) -> int:
         try:
@@ -134,6 +143,9 @@ class VulnerableCodeBaseImporterPipeline(VulnerableCodePipeline):
             )
         except Exception as e:
             self.log(
-                f"Failed to import advisory: {advisory!r} with error {e!r}:\n{traceback_format_exc()}",
+                f"Failed to import advisory: {
+                    advisory!r} with error {
+                    e!r}:\n{
+                    traceback_format_exc()}",
                 level=logging.ERROR,
             )

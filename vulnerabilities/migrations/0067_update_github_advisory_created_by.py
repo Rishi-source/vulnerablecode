@@ -12,19 +12,18 @@ def update_created_by(apps, schema_editor):
     from vulnerabilities.pipelines.github_importer import GitHubAPIImporterPipeline
 
     Advisory = apps.get_model("vulnerabilities", "Advisory")
-    Advisory.objects.filter(created_by="vulnerabilities.importers.github.GitHubAPIImporter").update(
-        created_by=GitHubAPIImporterPipeline.pipeline_id
-    )
-
+    Advisory.objects.filter(
+        created_by="vulnerabilities.importers.github.GitHubAPIImporter").update(
+        created_by=GitHubAPIImporterPipeline.pipeline_id)
 
 
 def reverse_update_created_by(apps, schema_editor):
     from vulnerabilities.pipelines.github_importer import GitHubAPIImporterPipeline
 
     Advisory = apps.get_model("vulnerabilities", "Advisory")
-    Advisory.objects.filter(created_by=GitHubAPIImporterPipeline.pipeline_id).update(
-        created_by="vulnerabilities.importers.github.GitHubAPIImporter"
-    )
+    Advisory.objects.filter(
+        created_by=GitHubAPIImporterPipeline.pipeline_id).update(
+        created_by="vulnerabilities.importers.github.GitHubAPIImporter")
 
 
 class Migration(migrations.Migration):
@@ -34,5 +33,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(update_created_by, reverse_code=reverse_update_created_by),
+        migrations.RunPython(
+            update_created_by,
+            reverse_code=reverse_update_created_by),
     ]

@@ -351,5 +351,6 @@ def test_get_cwes_from_github_advisory():
         }
     ) == [173, 200, 378, 732]
     assert get_cwes_from_github_advisory(
-        {"cwes": {"nodes": [{"cweId": "CWE-11111111111"}, {"cweId": "CWE-200"}]}}  # invalid cwe-id
+        # invalid cwe-id
+        {"cwes": {"nodes": [{"cweId": "CWE-11111111111"}, {"cweId": "CWE-200"}]}}
     ) == [200]

@@ -36,7 +36,8 @@ MM_REPO = {
 
 class MattermostDataSource(Importer):
     def updated_advisories(self):
-        # FIXME: Change after this https://forum.mattermost.org/t/mattermost-website-returning-403-when-headers-contain-the-word-python/11412
+        # FIXME: Change after this
+        # https://forum.mattermost.org/t/mattermost-website-returning-403-when-headers-contain-the-word-python/11412
         self.set_api()
         data = requests.get(
             SECURITY_UPDATES_URL, headers={"user-agent": "aboutcode/vulnerablecode"}
@@ -92,7 +93,8 @@ class MattermostDataSource(Importer):
                 PackageURL(type="mattermost", name=name, version=version)
                 for version in self.version_api.get(MM_REPO[name])
                 if
-                # The versions comparisions and advisories are not compatible with cloud-* versions
+                # The versions comparisions and advisories are not compatible
+                # with cloud-* versions
                 not version.startswith("cloud-")
                 and any((version in version_range for version_range in affected_version_ranges))
                 and not any((version in version_range for version_range in excluded_version_ranges))

@@ -29,7 +29,8 @@ class GentooImporter(Importer):
     spdx_license_expression = "CC-BY-SA-4.0"
     # the license notice is at this url https://anongit.gentoo.org/ says:
     # The contents of this document, unless otherwise expressly stated, are licensed
-    # under the [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/) license.
+    # under the
+    # [CC-BY-SA-4.0](https://creativecommons.org/licenses/by-sa/4.0/) license.
     license_url = "https://creativecommons.org/licenses/by-sa/4.0/"
     importer_name = "Gentoo Importer"
 

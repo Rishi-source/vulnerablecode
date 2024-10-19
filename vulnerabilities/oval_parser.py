@@ -75,7 +75,8 @@ class OvalParser:
         for ref in criteria_refs:
             oval_test = self.oval_document.getElementByID(ref)
             # All matches will be `rpminfo_test` elements inside the `tests` element.
-            # Test for len == 2 because this IDs a pair of nested `object` and `state` elements.
+            # Test for len == 2 because this IDs a pair of nested `object` and
+            # `state` elements.
             if len(oval_test.element) == 2:
                 _, state = self.get_object_state_of_test(oval_test)
                 valid_test = True
@@ -111,7 +112,8 @@ class OvalParser:
         pkg_list = []
 
         for var in obj.element:
-            # It appears that `var_ref` is used in Ubuntu OVAL but not Debian or SUSE.
+            # It appears that `var_ref` is used in Ubuntu OVAL but not Debian
+            # or SUSE.
             if var.get("var_ref"):
                 var_elem = self.oval_document.getElementByID(var.get("var_ref"))
                 comment = var_elem.element.get("comment")

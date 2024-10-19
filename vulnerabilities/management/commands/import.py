@@ -25,9 +25,15 @@ class Command(BaseCommand):
             action="store_true",
             help="List available importers",
         )
-        parser.add_argument("--all", action="store_true", help="Run all available importers")
+        parser.add_argument(
+            "--all",
+            action="store_true",
+            help="Run all available importers")
 
-        parser.add_argument("sources", nargs="*", help="Fully qualified importer name to run")
+        parser.add_argument(
+            "sources",
+            nargs="*",
+            help="Fully qualified importer name to run")
 
     def handle(self, *args, **options):
         try:
@@ -46,7 +52,8 @@ class Command(BaseCommand):
             raise CommandError("Keyboard interrupt received. Stopping...")
 
     def list_sources(self):
-        self.stdout.write("Vulnerability data can be imported from the following importers:")
+        self.stdout.write(
+            "Vulnerability data can be imported from the following importers:")
         self.stdout.write("\n".join(IMPORTERS_REGISTRY))
 
     def import_data(self, importers):
@@ -58,32 +65,35 @@ class Command(BaseCommand):
 
         for importer in importers:
             if issubclass(importer, VulnerableCodeBaseImporterPipeline):
-                self.stdout.write(f"Importing data using {importer.pipeline_id}")
+                self.stdout.write(
+                    f"Importing data using {
+                        importer.pipeline_id}")
                 status, error = importer().execute()
                 if status != 0:
                     self.stdout.write(error)
                     failed_importers.append(importer.pipeline_id)
                 continue
 
-            self.stdout.write(f"Importing data using {importer.qualified_name}")
+            self.stdout.write(
+                f"Importing data using {
+                    importer.qualified_name}")
             try:
                 ImportRunner(importer).run()
                 self.stdout.write(
                     self.style.SUCCESS(
-                        f"Successfully imported data using {importer.qualified_name}"
-                    )
-                )
+                        f"Successfully imported data using {
+                            importer.qualified_name}"))
             except Exception:
                 failed_importers.append(importer.qualified_name)
                 traceback.print_exc()
                 self.stdout.write(
                     self.style.ERROR(
-                        f"Failed to run importer {importer.qualified_name}. Continuing..."
-                    )
-                )
+                        f"Failed to run importer {
+                            importer.qualified_name}. Continuing..."))
 
         if failed_importers:
-            raise CommandError(f"{len(failed_importers)} failed!: {','.join(failed_importers)}")
+            raise CommandError(
+                f"{len(failed_importers)} failed!: {','.join(failed_importers)}")
 
 
 def validate_importers(sources):

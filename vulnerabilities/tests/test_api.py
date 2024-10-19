@@ -92,7 +92,8 @@ class TestDebianResponse(TransactionTestCase):
         self.client.credentials(HTTP_AUTHORIZATION=self.auth)
 
     def test_query_qualifier_filtering(self):
-        # packages to check filtering with single/multiple and unordered qualifier filtering
+        # packages to check filtering with single/multiple and unordered
+        # qualifier filtering
         pk_multi_qf = Package.objects.create(
             name="vlc", version="1.50-1.1", type="deb", qualifiers={"foo": "bar", "tar": "ball"}
         )
@@ -111,7 +112,8 @@ class TestDebianResponse(TransactionTestCase):
 
         self.assertEqual(2, response["count"])
 
-        # check filtering when there is intersection of qualifiers between packages
+        # check filtering when there is intersection of qualifiers between
+        # packages
         test_purl = quote("pkg:deb/vlc@1.50-1.1?foo=bar")
         response = self.client.get(f"/api/packages/?purl={test_purl}", format="json").data
 
@@ -413,9 +415,11 @@ class APIPerformanceTest(TestCase):
         self.vul3 = create_vuln("VCID-vul3-vul3-vul3", ["CVE-2021-46877", "GHSA-3x8x-79m2-3w2w"])
 
         from_purl = Package.objects.from_purl
-        # lesser-version pkg that also fixes the vuln fixed by the searched-for pkg
+        # lesser-version pkg that also fixes the vuln fixed by the searched-for
+        # pkg
         self.pkg_2_12_6 = from_purl("pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.12.6")
-        # this is a lesser version omitted from the API that fixes searched-for pkg's vuln
+        # this is a lesser version omitted from the API that fixes searched-for
+        # pkg's vuln
         self.pkg_2_12_6_1 = from_purl(
             "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.12.6.1"
         )
@@ -532,9 +536,11 @@ class APITestCasePackage(TestCase):
         self.vul3 = create_vuln("VCID-vul3-vul3-vul3", ["CVE-2021-46877", "GHSA-3x8x-79m2-3w2w"])
 
         from_purl = Package.objects.from_purl
-        # lesser-version pkg that also fixes the vuln fixed by the searched-for pkg
+        # lesser-version pkg that also fixes the vuln fixed by the searched-for
+        # pkg
         self.pkg_2_12_6 = from_purl("pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.12.6")
-        # this is a lesser version omitted from the API that fixes searched-for pkg's vuln
+        # this is a lesser version omitted from the API that fixes searched-for
+        # pkg's vuln
         self.pkg_2_12_6_1 = from_purl(
             "pkg:maven/com.fasterxml.jackson.core/jackson-databind@2.12.6.1"
         )

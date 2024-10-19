@@ -54,7 +54,9 @@ def detect_and_flag_ghost_packages(logger=None):
     )
 
     ghost_package_count = 0
-    progress = LoopProgress(total_iterations=distinct_packages_count, logger=logger)
+    progress = LoopProgress(
+        total_iterations=distinct_packages_count,
+        logger=logger)
     for type_namespace_name, packages in progress.iter(grouped_packages):
         ghost_package_count += flag_ghost_packages(
             base_purl=PackageURL(*type_namespace_name),
@@ -85,7 +87,10 @@ def flag_ghost_packages(base_purl, packages, logger=None):
             ghost_packages += 1
 
             if logger:
-                logger(f"Flagging ghost package {pkg.purl!s}", level=logging.DEBUG)
+                logger(
+                    f"Flagging ghost package {
+                        pkg.purl!s}",
+                    level=logging.DEBUG)
         pkg.save()
 
     return ghost_packages
@@ -98,7 +103,10 @@ def get_versions(purl, logger=None):
     except Exception as e:
         if logger:
             logger(
-                f"Error while fetching known versions for {purl!s}: {e!r} \n {traceback_format_exc()}",
+                f"Error while fetching known versions for {
+                    purl!s}: {
+                    e!r} \n {
+                    traceback_format_exc()}",
                 level=logging.ERROR,
             )
         return

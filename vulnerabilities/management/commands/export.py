@@ -86,9 +86,12 @@ class Command(BaseCommand):
         if not path or not base_path.is_dir():
             raise CommandError("Enter a valid directory path")
 
-        self.stdout.write("Exporting vulnerablecode Package and Vulnerability data.")
+        self.stdout.write(
+            "Exporting vulnerablecode Package and Vulnerability data.")
         self.export_data(base_path)
-        self.stdout.write(self.style.SUCCESS(f"Successfully exported data to {base_path}."))
+        self.stdout.write(
+            self.style.SUCCESS(
+                f"Successfully exported data to {base_path}."))
 
     def export_data(self, base_path: Path):
         """
@@ -97,7 +100,8 @@ class Command(BaseCommand):
         i = 0
         seen_vcid = set()
 
-        for i, (purl_without_version, package_versions) in enumerate(packages_by_type_ns_name(), 1):
+        for i, (purl_without_version, package_versions) in enumerate(
+                packages_by_type_ns_name(), 1):
             pkg_version = None
             try:
                 package_urls = []
@@ -106,14 +110,11 @@ class Command(BaseCommand):
                     purl = pkg_version.package_url
                     package_urls.append(purl)
                     package_data = {
-                        "purl": purl,
-                        "affected_by_vulnerabilities": list(
-                            pkg_version.affected_by.values_list("vulnerability_id", flat=True)
-                        ),
-                        "fixing_vulnerabilities": list(
-                            pkg_version.fixing.values_list("vulnerability_id", flat=True)
-                        ),
-                    }
+                        "purl": purl, "affected_by_vulnerabilities": list(
+                            pkg_version.affected_by.values_list(
+                                "vulnerability_id", flat=True)), "fixing_vulnerabilities": list(
+                            pkg_version.fixing.values_list(
+                                "vulnerability_id", flat=True)), }
                     package_vulnerabilities.append(package_data)
 
                     for vuln in pkg_version.vulnerabilities.all():
@@ -125,23 +126,37 @@ class Command(BaseCommand):
                         seen_vcid.add(vcid)
                         vulnerability = serialize_vulnerability(vuln)
                         vpath = hashid.get_vcid_yml_file_path(vcid)
-                        write_file(base_path=base_path, file_path=vpath, data=vulnerability)
+                        write_file(
+                            base_path=base_path,
+                            file_path=vpath,
+                            data=vulnerability)
                         if (lv := len(seen_vcid)) % 100 == 0:
-                            self.stdout.write(f"Processed {lv} vulnerabilities. Last VCID: {vcid}")
+                            self.stdout.write(
+                                f"Processed {lv} vulnerabilities. Last VCID: {vcid}")
 
                 ppath = hashid.get_package_purls_yml_file_path(purl)
-                write_file(base_path=base_path, file_path=ppath, data=package_urls)
+                write_file(
+                    base_path=base_path,
+                    file_path=ppath,
+                    data=package_urls)
 
                 pvpath = hashid.get_package_vulnerabilities_yml_file_path(purl)
-                write_file(base_path=base_path, file_path=pvpath, data=package_vulnerabilities)
+                write_file(
+                    base_path=base_path,
+                    file_path=pvpath,
+                    data=package_vulnerabilities)
 
                 if i % 100 == 0:
-                    self.stdout.write(f"Processed {i} package. Last PURL: {purl_without_version}")
+                    self.stdout.write(
+                        f"Processed {i} package. Last PURL: {purl_without_version}")
 
             except Exception as e:
-                raise Exception(f"Failed to process Package: {pkg_version}") from e
+                raise Exception(
+                    f"Failed to process Package: {pkg_version}") from e
 
-        self.stdout.write(f"Exported data for: {i} package and {len(seen_vcid)} vulnerabilities.")
+        self.stdout.write(
+            f"Exported data for: {i} package and {
+                len(seen_vcid)} vulnerabilities.")
 
 
 def by_purl_type_ns_name(package):

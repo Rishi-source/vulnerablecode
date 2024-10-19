@@ -64,7 +64,8 @@ class GitLabImporterPipeline(VulnerableCodeBaseImporterPipeline):
         "pypi": "pypi",
     }
 
-    gitlab_scheme_by_purl_type = {v: k for k, v in purl_type_by_gitlab_scheme.items()}
+    gitlab_scheme_by_purl_type = {v: k for k,
+                                  v in purl_type_by_gitlab_scheme.items()}
 
     def clone(self):
         self.log(f"Cloning `{self.repo_url}`")
@@ -107,7 +108,8 @@ class GitLabImporterPipeline(VulnerableCodeBaseImporterPipeline):
             self.vcs_response.delete()
 
 
-def parse_advisory_path(base_path: Path, file_path: Path) -> Tuple[str, str, str]:
+def parse_advisory_path(
+        base_path: Path, file_path: Path) -> Tuple[str, str, str]:
     """
     Parse a gitlab advisory file and return a 3-tuple of:
        (gitlab_type, package_slug, vulnerability_id)
@@ -156,7 +158,10 @@ def get_purl(package_slug, purl_type_by_gitlab_scheme, logger):
         name = parts[-1]
         namespace = "/".join(parts[1:-1])
         return PackageURL(type=purl_type, namespace=namespace, name=name)
-    logger(f"get_purl: package_slug can not be parsed: {package_slug!r}", level=logging.ERROR)
+    logger(
+        f"get_purl: package_slug can not be parsed: {
+            package_slug!r}",
+        level=logging.ERROR)
     return
 
 
@@ -182,8 +187,11 @@ def extract_affected_packages(
 
 
 def parse_gitlab_advisory(
-    file, base_path, gitlab_scheme_by_purl_type, purl_type_by_gitlab_scheme, logger
-):
+        file,
+        base_path,
+        gitlab_scheme_by_purl_type,
+        purl_type_by_gitlab_scheme,
+        logger):
     """
     Parse a Gitlab advisory file and return an AdvisoryData or None.
     These files are YAML. There is a JSON schema documented at
@@ -211,14 +219,19 @@ def parse_gitlab_advisory(
         gitlab_advisory = saneyaml.load(f)
     if not isinstance(gitlab_advisory, dict):
         logger(
-            f"parse_gitlab_advisory: unknown gitlab advisory format in {file!r} with data: {gitlab_advisory!r}",
+            f"parse_gitlab_advisory: unknown gitlab advisory format in {
+                file!r} with data: {
+                gitlab_advisory!r}",
             level=logging.ERROR,
         )
         return
 
-    # refer to schema here https://gitlab.com/gitlab-org/advisories-community/-/blob/main/ci/schema/schema.json
+    # refer to schema here
+    # https://gitlab.com/gitlab-org/advisories-community/-/blob/main/ci/schema/schema.json
     aliases = gitlab_advisory.get("identifiers")
-    summary = build_description(gitlab_advisory.get("title"), gitlab_advisory.get("description"))
+    summary = build_description(
+        gitlab_advisory.get("title"),
+        gitlab_advisory.get("description"))
     urls = gitlab_advisory.get("urls")
     references = [Reference.from_url(u) for u in urls]
 
@@ -240,8 +253,10 @@ def parse_gitlab_advisory(
     )
     if not purl:
         logger(
-            f"parse_yaml_file: purl is not valid: {file!r} {package_slug!r}", level=logging.ERROR
-        )
+            f"parse_yaml_file: purl is not valid: {
+                file!r} {
+                package_slug!r}",
+            level=logging.ERROR)
         return AdvisoryData(
             aliases=aliases,
             summary=summary,
@@ -252,7 +267,8 @@ def parse_gitlab_advisory(
     affected_version_range = None
     fixed_versions = gitlab_advisory.get("fixed_versions") or []
     affected_range = gitlab_advisory.get("affected_range")
-    gitlab_native_schemes = set(["pypi", "gem", "npm", "go", "packagist", "conan"])
+    gitlab_native_schemes = set(
+        ["pypi", "gem", "npm", "go", "packagist", "conan"])
     vrc: VersionRange = RANGE_CLASS_BY_SCHEMES[purl.type]
     gitlab_scheme = gitlab_scheme_by_purl_type[purl.type]
     try:
@@ -265,7 +281,11 @@ def parse_gitlab_advisory(
                 affected_version_range = vrc.from_native(affected_range)
     except Exception as e:
         logger(
-            f"parse_yaml_file: affected_range is not parsable: {affected_range!r} for: {purl!s} error: {e!r}\n {traceback.format_exc()}",
+            f"parse_yaml_file: affected_range is not parsable: {
+                affected_range!r} for: {
+                purl!s} error: {
+                e!r}\n {
+                    traceback.format_exc()}",
             level=logging.ERROR,
         )
 
@@ -276,7 +296,10 @@ def parse_gitlab_advisory(
             parsed_fixed_versions.append(fixed_version)
         except Exception as e:
             logger(
-                f"parse_yaml_file: fixed_version is not parsable`: {fixed_version!r} error: {e!r}\n {traceback.format_exc()}",
+                f"parse_yaml_file: fixed_version is not parsable`: {
+                    fixed_version!r} error: {
+                    e!r}\n {
+                    traceback.format_exc()}",
                 level=logging.ERROR,
             )
 

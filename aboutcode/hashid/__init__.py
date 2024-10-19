@@ -168,7 +168,8 @@ def get_package_vulnerabilities_yml_file_path(purl: Union[PackageURL, str]):
 # 2. Large Ecosystem (~500K packages): 2^7 = 128 git repositories
 # 3. Medium Ecosystem (~50K packages): 2^5 = 32 git repositories
 # 4. Small Ecosystem (~2K packages): 2^0 = 1 git repository
-# See https://github.com/aboutcode-org/federatedcode/issues/3#issuecomment-2388371726
+# See
+# https://github.com/aboutcode-org/federatedcode/issues/3#issuecomment-2388371726
 BIT_COUNT_BY_ECOSYSTEM = {
     # Super Large Ecosystem
     "github": 10,
@@ -397,7 +398,8 @@ def get_purl_hash(purl: Union[PackageURL, str], _bit_count: int = 0) -> str:
     hash_bytes = sha256(purl_bytes).digest()
     # ... converted to integer so we can truncate with modulo. Note that we use big endian.
     hash_int = int.from_bytes(hash_bytes, "big")
-    # take a modulo based on bit count to truncate digest to the largest int value for the bitcount
+    # take a modulo based on bit count to truncate digest to the largest int
+    # value for the bitcount
     max_int = 2**_bit_count
     short_hash = hash_int % max_int
     # maximum number of hex characters in the hash string

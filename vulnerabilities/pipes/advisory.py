@@ -26,7 +26,10 @@ from vulnerabilities.models import VulnerabilitySeverity
 from vulnerabilities.models import Weakness
 
 
-def insert_advisory(advisory: AdvisoryData, pipeline_id: str, logger: Callable = None):
+def insert_advisory(
+        advisory: AdvisoryData,
+        pipeline_id: str,
+        logger: Callable = None):
     obj = None
     try:
         obj, _ = Advisory.objects.get_or_create(
@@ -45,7 +48,11 @@ def insert_advisory(advisory: AdvisoryData, pipeline_id: str, logger: Callable =
     except Exception as e:
         if logger:
             logger(
-                f"Error while processing {advisory!r} with aliases {advisory.aliases!r}: {e!r} \n {traceback_format_exc()}",
+                f"Error while processing {
+                    advisory!r} with aliases {
+                    advisory.aliases!r}: {
+                    e!r} \n {
+                    traceback_format_exc()}",
                 level=logging.ERROR,
             )
 
@@ -90,7 +97,10 @@ def import_advisory(
 
     if not vulnerability:
         if logger:
-            logger(f"Unable to get vulnerability for advisory: {advisory!r}", level=logging.ERROR)
+            logger(
+                f"Unable to get vulnerability for advisory: {
+                    advisory!r}",
+                level=logging.ERROR)
         return
 
     for ref in advisory_data.references:
@@ -112,7 +122,8 @@ def import_advisory(
         )
         for severity in ref.severities:
             try:
-                published_at = str(severity.published_at) if severity.published_at else None
+                published_at = str(
+                    severity.published_at) if severity.published_at else None
                 _, created = VulnerabilitySeverity.objects.update_or_create(
                     scoring_system=severity.system.identifier,
                     reference=reference,
@@ -122,22 +133,24 @@ def import_advisory(
                         "published_at": published_at,
                     },
                 )
-            except:
+            except BaseException:
                 if logger:
                     logger(
-                        f"Failed to create VulnerabilitySeverity for: {severity} with error:\n{traceback_format_exc()}",
-                        level=logging.ERROR,
-                    )
+                        f"Failed to create VulnerabilitySeverity for: {severity} with error:\n{
+                            traceback_format_exc()}", level=logging.ERROR, )
             if not created:
                 if logger:
                     logger(
-                        f"Severity updated for reference {ref!r} to value: {severity.value!r} "
-                        f"and scoring_elements: {severity.scoring_elements!r}",
+                        f"Severity updated for reference {
+                            ref!r} to value: {
+                            severity.value!r} " f"and scoring_elements: {
+                            severity.scoring_elements!r}",
                         level=logging.DEBUG,
                     )
 
     for affected_purl in affected_purls or []:
-        vulnerable_package, _ = Package.objects.get_or_create_from_purl(purl=affected_purl)
+        vulnerable_package, _ = Package.objects.get_or_create_from_purl(
+            purl=affected_purl)
         PackageRelatedVulnerability(
             vulnerability=vulnerability,
             package=vulnerable_package,
@@ -147,7 +160,8 @@ def import_advisory(
         ).update_or_create(advisory=advisory)
 
     for fixed_purl in fixed_purls:
-        fixed_package, _ = Package.objects.get_or_create_from_purl(purl=fixed_purl)
+        fixed_package, _ = Package.objects.get_or_create_from_purl(
+            purl=fixed_purl)
         PackageRelatedVulnerability(
             vulnerability=vulnerability,
             package=fixed_package,

@@ -12,10 +12,9 @@ def update_created_by(apps, schema_editor):
     from vulnerabilities.pipelines.nvd_importer import NVDImporterPipeline
 
     Advisory = apps.get_model("vulnerabilities", "Advisory")
-    Advisory.objects.filter(created_by="vulnerabilities.importers.nvd.NVDImporter").update(
-        created_by=NVDImporterPipeline.pipeline_id
-    )
-
+    Advisory.objects.filter(
+        created_by="vulnerabilities.importers.nvd.NVDImporter").update(
+        created_by=NVDImporterPipeline.pipeline_id)
 
 
 def reverse_update_created_by(apps, schema_editor):
@@ -34,5 +33,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(update_created_by, reverse_code=reverse_update_created_by),
+        migrations.RunPython(
+            update_created_by,
+            reverse_code=reverse_update_created_by),
     ]

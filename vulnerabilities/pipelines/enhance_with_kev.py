@@ -36,7 +36,9 @@ class VulnerabilityKevPipeline(VulnerableCodePipeline):
             response.raise_for_status()
         except requests.exceptions.HTTPError as http_err:
             self.log(
-                f"Failed to fetch the KEV Exploits: {kev_url} with error {http_err!r}:\n{traceback_format_exc()}",
+                f"Failed to fetch the KEV Exploits: {kev_url} with error {
+                    http_err!r}:\n{
+                    traceback_format_exc()}",
                 level=logging.ERROR,
             )
             raise
@@ -44,10 +46,14 @@ class VulnerabilityKevPipeline(VulnerableCodePipeline):
 
     def add_exploits(self):
         fetched_exploit_count = self.kev_data.get("count")
-        self.log(f"Enhancing the vulnerability with {fetched_exploit_count:,d} exploit records")
+        self.log(
+            f"Enhancing the vulnerability with {
+                fetched_exploit_count:,d} exploit records")
 
         vulnerability_exploit_count = 0
-        progress = LoopProgress(total_iterations=fetched_exploit_count, logger=self.log)
+        progress = LoopProgress(
+            total_iterations=fetched_exploit_count,
+            logger=self.log)
 
         for record in progress.iter(self.kev_data.get("vulnerabilities", [])):
             vulnerability_exploit_count += add_vulnerability_exploit(
@@ -55,7 +61,9 @@ class VulnerabilityKevPipeline(VulnerableCodePipeline):
                 logger=self.log,
             )
 
-        self.log(f"Successfully added {vulnerability_exploit_count:,d} kev exploit")
+        self.log(
+            f"Successfully added {
+                vulnerability_exploit_count:,d} kev exploit")
 
 
 def add_vulnerability_exploit(kev_vul, logger):

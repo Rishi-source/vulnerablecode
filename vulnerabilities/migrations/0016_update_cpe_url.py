@@ -1,5 +1,6 @@
 from django.db import migrations
 
+
 class Migration(migrations.Migration):
 
     def update_cpe_url(apps, schema_editor):
@@ -17,7 +18,8 @@ class Migration(migrations.Migration):
             reference.save()
 
     dependencies = [
-        ('vulnerabilities', '0015_alter_vulnerabilityseverity_unique_together_and_more'),
+        ('vulnerabilities',
+         '0015_alter_vulnerabilityseverity_unique_together_and_more'),
     ]
 
     operations = [

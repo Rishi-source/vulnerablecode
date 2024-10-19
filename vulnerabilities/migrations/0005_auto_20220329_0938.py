@@ -10,8 +10,13 @@ class Migration(migrations.Migration):
         Advisory = apps.get_model("vulnerabilities", "Advisory")
         for advisory in Advisory.objects.all():
             checksum = hashlib.md5()
-            for field in (advisory.summary, advisory.affected_packages, advisory.references):
-                value = json.dumps(field, separators=(",", ":")).encode("utf-8")
+            for field in (
+                    advisory.summary,
+                    advisory.affected_packages,
+                    advisory.references):
+                value = json.dumps(
+                    field, separators=(
+                        ",", ":")).encode("utf-8")
                 checksum.update(value)
             advisory.unique_content_id = checksum.hexdigest()
             advisory.save()

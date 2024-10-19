@@ -70,7 +70,8 @@ def to_advisories(data):
                     AffectedPackage(
                         package=PackageURL(
                             name="postgresql",
-                            # TODO: See https://github.com/nexB/vulnerablecode/issues/990
+                            # TODO: See
+                            # https://github.com/nexB/vulnerablecode/issues/990
                             type="generic",
                             qualifiers=pkg_qualifiers,
                         ),
@@ -87,7 +88,8 @@ def to_advisories(data):
                 AffectedPackage(
                     package=PackageURL(
                         name="postgresql",
-                        # TODO: See https://github.com/nexB/vulnerablecode/issues/990
+                        # TODO: See
+                        # https://github.com/nexB/vulnerablecode/issues/990
                         type="generic",
                         qualifiers=pkg_qualifiers,
                     ),
@@ -108,7 +110,8 @@ def to_advisories(data):
             link = a_tag.attrs["href"]
             if link.startswith("/"):
                 # Convert relative urls to absolute url.
-                # All links qualify this criteria, so this `if` statement is kind of a defensive mechanism
+                # All links qualify this criteria, so this `if` statement is
+                # kind of a defensive mechanism
                 link = urlparse.urljoin("https://www.postgresql.org/", link)
                 severities = []
                 if "support/security/CVE" in link and vector_link_tag:

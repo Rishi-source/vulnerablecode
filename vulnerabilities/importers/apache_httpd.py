@@ -131,7 +131,8 @@ class ApacheHTTPDImporter(Importer):
 
         for fixed_version in fixed_versions:
             # The VersionConstraint method `invert()` inverts the fixed_version's comparator,
-            # enabling inclusion of multiple fixed versions with the `affected_version_range` values.
+            # enabling inclusion of multiple fixed versions with the
+            # `affected_version_range` values.
             constraints.append(
                 VersionConstraint(
                     comparator="=",

@@ -13,14 +13,27 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='advisory',
             name='weaknesses',
-            field=models.JSONField(blank=True, default=list, help_text='A list of CWE ids'),
+            field=models.JSONField(
+                blank=True,
+                default=list,
+                help_text='A list of CWE ids'),
         ),
         migrations.CreateModel(
             name='Weakness',
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('cwe_id', models.IntegerField(help_text='CWE id')),
-                ('vulnerabilities', models.ManyToManyField(related_name='weaknesses', to='vulnerabilities.vulnerability')),
+                ('id',
+                 models.AutoField(
+                     auto_created=True,
+                     primary_key=True,
+                     serialize=False,
+                     verbose_name='ID')),
+                ('cwe_id',
+                 models.IntegerField(
+                     help_text='CWE id')),
+                ('vulnerabilities',
+                 models.ManyToManyField(
+                     related_name='weaknesses',
+                     to='vulnerabilities.vulnerability')),
             ],
         ),
     ]

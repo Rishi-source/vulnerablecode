@@ -21,7 +21,9 @@ class XsaReference(Reference):
         Return a new XsaReference from an XSA-XXXX id.
         """
         if not xsa_id or not xsa_id.lower().startswith("xsa"):
-            return ValueError(f"Not a Xen reference. Does not start with XSA: {xsa_id!r}")
+            return ValueError(
+                f"Not a Xen reference. Does not start with XSA: {
+                    xsa_id!r}")
         _, numid = xsa_id.rsplit("-")
         return cls(
             reference_id=xsa_id,
@@ -50,7 +52,9 @@ class ZbxReference(Reference):
         Return a new ZbxReference from an ZBX-XXXX id.
         """
         if not zbx_id or not zbx_id.lower().startswith("zbx"):
-            return ValueError(f"Not a Zabbix reference. Does not start with ZBX: {zbx_id!r}")
+            return ValueError(
+                f"Not a Zabbix reference. Does not start with ZBX: {
+                    zbx_id!r}")
         return cls(
             reference_id=zbx_id,
             url=f"https://support.zabbix.com/browse/{zbx_id}",

@@ -6,7 +6,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("vulnerabilities", "0052_remove_duped_purls_with_namespace_name_mixed"),
+        ("vulnerabilities",
+         "0052_remove_duped_purls_with_namespace_name_mixed"),
     ]
 
     operations = [

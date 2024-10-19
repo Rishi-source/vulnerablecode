@@ -95,7 +95,8 @@ class SnykDataSource(DataSource):
         # get list of vulnerabilities for cve id
         vulns_list = parse_cve_advisory_html(response)
 
-        # for each vulnerability get fixed version from snyk_id_url, get affected version from package_advisory_url
+        # for each vulnerability get fixed version from snyk_id_url, get
+        # affected version from package_advisory_url
         for snyk_id, package_advisory_url in vulns_list.items():
             package_advisories_list = self.fetch(package_advisory_url)
             package_advisories = extract_html_json_advisories(package_advisories_list)
@@ -122,7 +123,8 @@ class SnykDataSource(DataSource):
             "pub": "pub",
             "pypi": "pip",
             "gem": "rubygems",
-            # any purl.type not in supported_ecosystem shall implicitly be treated as unmanaged type
+            # any purl.type not in supported_ecosystem shall implicitly be
+            # treated as unmanaged type
             "unmanaged": "unmanaged",
         }
 
@@ -139,7 +141,8 @@ def generate_package_advisory_url(purl):
     """
     url_package_advisories = "https://security.snyk.io/package/{ecosystem}/{package}"
 
-    # Pseudo API, unfortunately gives only 30 vulnerability per package, but this is the best we have for unmanaged packages
+    # Pseudo API, unfortunately gives only 30 vulnerability per package, but
+    # this is the best we have for unmanaged packages
     url_unmanaged_package_advisories = (
         "https://security.snyk.io/api/listing?search={package}&type=unmanaged"
     )

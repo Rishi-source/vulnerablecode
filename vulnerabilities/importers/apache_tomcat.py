@@ -157,7 +157,8 @@ class ApacheTomcatImporter(Importer):
         """
         Yield AdvisoryData objects extracted from the HTML text ``apache_tomcat_advisory_html``.
         """
-        # This yields groups of advisories organized by Tomcat fixed versions -- 1+ per group.
+        # This yields groups of advisories organized by Tomcat fixed versions
+        # -- 1+ per group.
         fixed_version_advisory_groups = extract_tomcat_advisory_data_from_page(
             apache_tomcat_advisory_html
         )
@@ -212,7 +213,8 @@ def extract_tomcat_advisory_data_from_page(apache_tomcat_advisory_html):
         fixed_versions = []
         fixed_version = ""
 
-        # Include the 2 groups of not-fixed advisories.  We report no value for those that won't be fixed.
+        # Include the 2 groups of not-fixed advisories.  We report no value for
+        # those that won't be fixed.
         if "Fixed in Apache Tomcat" in fixed_version_heading.text:
             fixed_version = fixed_version_heading.text.split("Fixed in Apache Tomcat")[-1].strip()
         elif "Will not be fixed in Apache Tomcat 4.1.x" in fixed_version_heading.text:

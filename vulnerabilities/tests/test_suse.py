@@ -22,7 +22,8 @@ class TestSUSEOvalParser(unittest.TestCase):
     def setUpClass(cls):
         xml_doc = ET.parse(os.path.join(TEST_DATA, "suse_oval_data.xml"))
         translator = {"less than": "<"}
-        #  all the elements which require "equals" are ignored(because they are not useful)
+        # all the elements which require "equals" are ignored(because they are
+        # not useful)
         cls.parsed_oval = OvalParser(translator, xml_doc)
 
     def setUp(self):

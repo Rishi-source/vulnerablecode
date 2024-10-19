@@ -38,7 +38,10 @@ class OpensslImporter(Importer):
     def fetch(self):
         response = requests.get(url=self.url)
         if not response.status_code == 200:
-            logger.error(f"Error while fetching {self.url}: {response.status_code}")
+            logger.error(
+                f"Error while fetching {
+                    self.url}: {
+                    response.status_code}")
             return
         return response.content
 
@@ -73,8 +76,8 @@ def to_advisory_data(xml_issue) -> AdvisoryData:
     for info in xml_issue:
         if info.tag == "impact":
             severity = VulnerabilitySeverity(
-                system=SCORING_SYSTEMS["generic_textual"], value=info.attrib["severity"]
-            )
+                system=SCORING_SYSTEMS["generic_textual"],
+                value=info.attrib["severity"])
 
         elif info.tag == "advisory":
             advisory_url = info.attrib["url"]
@@ -83,15 +86,17 @@ def to_advisory_data(xml_issue) -> AdvisoryData:
 
         elif info.tag == "cve":
             cve = info.attrib.get("name")
-            # use made up alias to compensate for case when advisory doesn't have CVE-ID
+            # use made up alias to compensate for case when advisory doesn't
+            # have CVE-ID
             madeup_alias = f"VC-OPENSSL-{date_published}"
             if cve:
                 cve = f"CVE-{cve}"
                 madeup_alias = f"{madeup_alias}-{cve}"
                 aliases.append(cve)
                 references.append(
-                    Reference(reference_id=cve, url=f"https://nvd.nist.gov/vuln/detail/{cve}")
-                )
+                    Reference(
+                        reference_id=cve,
+                        url=f"https://nvd.nist.gov/vuln/detail/{cve}"))
             aliases.append(madeup_alias)
 
         elif info.tag == "affects":
@@ -103,9 +108,11 @@ def to_advisory_data(xml_issue) -> AdvisoryData:
                 )
                 return
             if affected_base in vuln_pkg_versions_by_base_version:
-                vuln_pkg_versions_by_base_version[affected_base].append(affected_version)
+                vuln_pkg_versions_by_base_version[affected_base].append(
+                    affected_version)
             else:
-                vuln_pkg_versions_by_base_version[affected_base] = [affected_version]
+                vuln_pkg_versions_by_base_version[affected_base] = [
+                    affected_version]
 
         elif info.tag == "fixed":
             fixed_base = info.attrib["base"]
@@ -115,9 +122,9 @@ def to_advisory_data(xml_issue) -> AdvisoryData:
                 commit_hash = commit.attrib["hash"]
                 references.append(
                     Reference(
-                        url=urljoin("https://github.com/openssl/openssl/commit/", commit_hash)
-                    )
-                )
+                        url=urljoin(
+                            "https://github.com/openssl/openssl/commit/",
+                            commit_hash)))
 
         elif info.tag == "description":
             summary = " ".join(info.text.split())
@@ -132,7 +139,8 @@ def to_advisory_data(xml_issue) -> AdvisoryData:
             )
 
     for base_version, affected_versions in vuln_pkg_versions_by_base_version.items():
-        affected_version_range = OpensslVersionRange.from_versions(affected_versions)
+        affected_version_range = OpensslVersionRange.from_versions(
+            affected_versions)
         fixed_version = None
         if base_version in safe_pkg_versions:
             fixed_version = OpensslVersion(safe_pkg_versions[base_version])
@@ -148,9 +156,9 @@ def to_advisory_data(xml_issue) -> AdvisoryData:
     elif advisory_url:
         references.append(Reference(url=advisory_url))
 
-    parsed_date_published = dateparser.parse(date_published, yearfirst=True).replace(
-        tzinfo=timezone.utc
-    )
+    parsed_date_published = dateparser.parse(
+        date_published, yearfirst=True).replace(
+        tzinfo=timezone.utc)
 
     return AdvisoryData(
         aliases=aliases,

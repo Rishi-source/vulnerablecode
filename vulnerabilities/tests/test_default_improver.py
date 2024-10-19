@@ -151,7 +151,8 @@ def test_AffectedPackage_from_dict_should_not_crash_with_invalid_version_range()
     test_ranges = [
         # foo is a non-existing range
         "vers:foo/1.2.3",
-        # apache was not supported and returned from vulnerabilities.importers.apache_httpd.ApacheHTTPDImporter
+        # apache was not supported and returned from
+        # vulnerabilities.importers.apache_httpd.ApacheHTTPDImporter
         "vers:apache/",
         None,
     ]

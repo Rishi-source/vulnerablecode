@@ -34,7 +34,9 @@ class RustImporter(Importer):
 
         if not getattr(self, "_added_files", None):
             self._added_files, self._updated_files = self.file_changes(
-                subdir="crates",  # TODO Consider importing the advisories for cargo, etc as well.
+                subdir="crates",
+                # TODO Consider importing the advisories for cargo, etc as
+                # well.
                 recursive=True,
                 file_ext="md",
             )

@@ -19,14 +19,19 @@ from django.test import TestCase
 class TestCreateApiUserCommand(TestCase):
     def test_create_simple_user(self):
         buf = StringIO()
-        call_command("create_api_user", "--email", "foo@example.com", stdout=buf)
+        call_command(
+            "create_api_user",
+            "--email",
+            "foo@example.com",
+            stdout=buf)
         output = buf.getvalue()
         User = get_user_model()
         user = User.objects.get(username="foo@example.com")
         assert user.email == "foo@example.com"
         assert user.auth_token.key
 
-        assert f"User foo@example.com created with API key: {user.auth_token.key}" in output
+        assert f"User foo@example.com created with API key: {
+            user.auth_token.key}" in output
 
     def test_create_simple_user_cannot_create_user_twice_with_same_email(self):
         call_command("create_api_user", "--email", "foo1@example.com")
