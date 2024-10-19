@@ -322,3 +322,4 @@ class ApiUserCreateView(generic.CreateView):
 
     def get_success_url(self):
         return reverse_lazy("api_user_request")
+        
