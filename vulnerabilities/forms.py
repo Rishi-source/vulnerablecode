@@ -3,7 +3,7 @@
 # VulnerableCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: Apache-2.0
 # See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
-# See https://github.com/aboutcode-org/vulnerablecode for support or download.
+# See https://github.com/nexB/vulnerablecode for support or download.
 # See https://aboutcode.org for more information about nexB OSS projects.
 #
 
@@ -12,9 +12,42 @@ from django.core.validators import validate_email
 
 from vulnerabilities.models import ApiUser
 
+from .models import *
 
-class PackageSearchForm(forms.Form):
 
+class PaginationForm(forms.Form):
+    """Form to handle page size selection across the application."""
+
+    PAGE_CHOICES = [
+        ("20", "20 per page"),
+        ("50", "50 per page"),
+        ("100", "100 per page"),
+    ]
+
+    page_size = forms.ChoiceField(
+        choices=PAGE_CHOICES,
+        initial="20",
+        required=False,
+        widget=forms.Select(
+            attrs={
+                "class": "select is-small",
+                "onchange": "handlePageSizeChange(this.value)",
+                "id": "page-size-select",
+            }
+        ),
+    )
+
+
+class BaseSearchForm(forms.Form):
+    """Base form for implementing search functionality."""
+
+    search = forms.CharField(required=True)
+
+    def clean_search(self):
+        return self.cleaned_data.get("search", "")
+
+
+class PackageSearchForm(BaseSearchForm):
     search = forms.CharField(
         required=True,
         widget=forms.TextInput(
@@ -23,8 +56,7 @@ class PackageSearchForm(forms.Form):
     )
 
 
-class VulnerabilitySearchForm(forms.Form):
-
+class VulnerabilitySearchForm(BaseSearchForm):
     search = forms.CharField(
         required=True,
         widget=forms.TextInput(
