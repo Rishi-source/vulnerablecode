@@ -3,7 +3,7 @@
 # VulnerableCode is a trademark of nexB Inc.
 # SPDX-License-Identifier: Apache-2.0
 # See http://www.apache.org/licenses/LICENSE-2.0 for the license text.
-# See https://github.com/aboutcode-org/vulnerablecode for support or download.
+# See https://github.com/nexB/vulnerablecode for support or download.
 # See https://aboutcode.org for more information about nexB OSS projects.
 #
 import logging
@@ -15,6 +15,9 @@ from cvss.exceptions import CVSS4MalformedError
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
+from django.core.paginator import Paginator
 from django.http.response import Http404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -29,6 +32,7 @@ from univers.version_range import AlpineLinuxVersionRange
 from vulnerabilities import models
 from vulnerabilities.forms import ApiUserCreationForm
 from vulnerabilities.forms import PackageSearchForm
+from vulnerabilities.forms import PaginationForm
 from vulnerabilities.forms import VulnerabilitySearchForm
 from vulnerabilities.models import VulnerabilityStatusType
 from vulnerabilities.severity_systems import EPSS
@@ -37,6 +41,7 @@ from vulnerabilities.utils import get_severity_range
 from vulnerablecode.settings import env
 
 PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
 
 
 def purl_sort_key(purl: models.Package):
@@ -50,7 +55,14 @@ def purl_sort_key(purl: models.Package):
     purl_sort_version = purl.version
     if purl_version_class:
         purl_sort_version = purl_version_class(purl.version)
-    return (purl.type, purl.namespace, purl.name, purl_sort_version, purl.qualifiers, purl.subpath)
+    return (
+        purl.type,
+        purl.namespace,
+        purl.name,
+        purl_sort_version,
+        purl.qualifiers,
+        purl.subpath,
+    )
 
 
 def get_purl_version_class(purl: models.Package):
@@ -62,50 +74,134 @@ def get_purl_version_class(purl: models.Package):
     return purl_version_class
 
 
-class PackageSearch(ListView):
-    model = models.Package
-    template_name = "packages.html"
-    ordering = ["type", "namespace", "name", "version"]
+class BaseSearchView(ListView):
+    """Base view for implementing search functionality with pagination."""
+
     paginate_by = PAGE_SIZE
+    max_page_size = MAX_PAGE_SIZE
+
+    def get_paginate_by(self, queryset=None):
+        """
+        This function would get and validate the page size from request parameters.
+        It returns a page size between 1 and max_page_size, defaulting to
+        self.paginate_by for invalid inputs.
+        """
+        try:
+            page_size = int(
+                self.request.GET.get("page_size", self.paginate_by)
+            )
+            if page_size <= 0:
+                return self.paginate_by
+            return min(page_size, self.max_page_size)
+        except (ValueError, TypeError):
+            return self.paginate_by
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        request_query = self.request.GET
-        context["package_search_form"] = PackageSearchForm(request_query)
-        context["search"] = request_query.get("search")
+        context.update(
+            {
+                "pagination_form": PaginationForm(
+                    initial={"page_size": self.get_paginate_by()}
+                ),
+            }
+        )
         return context
+
+
+class PackageSearch(BaseSearchView):
+    model = models.Package
+    template_name = "packages.html"
+    form_class = PackageSearchForm
+    ordering = ["type", "namespace", "name", "version"]
 
     def get_queryset(self, query=None):
         """
-        Return a Package queryset for the ``query``.
-        Make a best effort approach to find matching packages either based
-        on exact purl, partial purl or just name and namespace.
+        Return a Package queryset based on search parameters.
+
+        Args:
+            query (str, optional): Direct search query, mainly used for testing.
+                                If not provided, uses form data from request.
+        Returns:
+            QuerySet: Filtered and ordered package queryset
         """
-        query = query or self.request.GET.get("search") or ""
+        if query is not None:
+            # Handle direct query (used in tests)
+            return (
+                self.model.objects.search(query)
+                .with_vulnerability_counts()
+                .prefetch_related()
+                .order_by("package_url")
+            )
+
+        # Handle form submission
+        self.form = self.form_class(self.request.GET)
+        if not self.form.is_valid():
+            return self.model.objects.none()
+
+        search_query = self.form.cleaned_data.get("search", "")
         return (
-            self.model.objects.search(query)
+            self.model.objects.search(search_query)
             .with_vulnerability_counts()
             .prefetch_related()
             .order_by("package_url")
         )
 
-
-class VulnerabilitySearch(ListView):
-    model = models.Vulnerability
-    template_name = "vulnerabilities.html"
-    ordering = ["vulnerability_id"]
-    paginate_by = PAGE_SIZE
-
     def get_context_data(self, **kwargs):
+        """
+        Get the context data for template rendering.
+        Adds form and search parameters to context.
+        """
         context = super().get_context_data(**kwargs)
-        request_query = self.request.GET
-        context["vulnerability_search_form"] = VulnerabilitySearchForm(request_query)
-        context["search"] = request_query.get("search")
+        context.update(
+            {
+                "package_search_form": self.form,
+                "search": self.request.GET.get("search"),
+            }
+        )
         return context
 
+
+class VulnerabilitySearch(BaseSearchView):
+    model = models.Vulnerability
+    template_name = "vulnerabilities.html"
+    form_class = VulnerabilitySearchForm
+    ordering = ["vulnerability_id"]
+
     def get_queryset(self, query=None):
-        query = query or self.request.GET.get("search") or ""
-        return self.model.objects.search(query=query).with_package_counts()
+        """
+        Return a Vulnerability queryset based on search parameters.
+
+        Args:
+            query (str, optional): Direct search query, mainly used for testing.
+                                If not provided, uses form data from request.
+        Returns:
+            QuerySet: Filtered vulnerability queryset
+        """
+        if query is not None:
+            return self.model.objects.search(query=query).with_package_counts()
+
+        self.form = self.form_class(self.request.GET)
+        if not self.form.is_valid():
+            return self.model.objects.none()
+
+        search_query = self.form.cleaned_data.get("search", "")
+        return self.model.objects.search(
+            query=search_query
+        ).with_package_counts()
+
+    def get_context_data(self, **kwargs):
+        """
+        Get the context data for template rendering.
+        Adds form and search parameters to context.
+        """
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "vulnerability_search_form": self.form,
+                "search": self.request.GET.get("search"),
+            }
+        )
+        return context
 
 
 class PackageDetails(DetailView):
@@ -118,8 +214,12 @@ class PackageDetails(DetailView):
         context = super().get_context_data(**kwargs)
         package = self.object
         context["package"] = package
-        context["affected_by_vulnerabilities"] = package.affected_by.order_by("vulnerability_id")
-        context["fixing_vulnerabilities"] = package.fixing.order_by("vulnerability_id")
+        context["affected_by_vulnerabilities"] = package.affected_by.order_by(
+            "vulnerability_id"
+        )
+        context["fixing_vulnerabilities"] = package.fixing.order_by(
+            "vulnerability_id"
+        )
         context["package_search_form"] = PackageSearchForm(self.request.GET)
         context["fixed_package_details"] = package.fixed_package_details
 
@@ -136,7 +236,8 @@ class PackageDetails(DetailView):
         else:
             cls = self.__class__.__name__
             raise AttributeError(
-                f"Package details view {cls} must be called with a purl, " f"but got: {purl!r}"
+                f"Package details view {cls} must be called with a purl, "
+                f"but got: {purl!r}"
             )
 
         try:
@@ -153,13 +254,19 @@ class VulnerabilityDetails(DetailView):
     slug_field = "vulnerability_id"
 
     def get_queryset(self):
-        return super().get_queryset().prefetch_related("references", "aliases", "weaknesses")
+        return (
+            super()
+            .get_queryset()
+            .prefetch_related("references", "aliases", "weaknesses")
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         weaknesses = self.object.weaknesses.all()
         weaknesses_present_in_db = [
-            weakness_object for weakness_object in weaknesses if weakness_object.weakness
+            weakness_object
+            for weakness_object in weaknesses
+            if weakness_object.weakness
         ]
         status = self.object.get_status_label
 
@@ -171,7 +278,9 @@ class VulnerabilityDetails(DetailView):
 
             if s.scoring_elements and s.scoring_system in SCORING_SYSTEMS:
                 try:
-                    vector_values = SCORING_SYSTEMS[s.scoring_system].get(s.scoring_elements)
+                    vector_values = SCORING_SYSTEMS[s.scoring_system].get(
+                        s.scoring_elements
+                    )
                     severity_vectors.append(vector_values)
                 except (
                     CVSS2MalformedError,
@@ -179,41 +288,68 @@ class VulnerabilityDetails(DetailView):
                     CVSS4MalformedError,
                     NotImplementedError,
                 ):
-                    logging.error(f"CVSSMalformedError for {s.scoring_elements}")
+                    logging.error(
+                        f"CVSSMalformedError for {s.scoring_elements}"
+                    )
 
             if s.value:
                 severity_values.add(s.value)
 
-        sorted_affected_packages = sorted(self.object.affected_packages.all(), key=purl_sort_key)
-        sorted_fixed_by_packages = sorted(self.object.fixed_by_packages.all(), key=purl_sort_key)
+        sorted_affected_packages = sorted(
+            self.object.affected_packages.all(), key=purl_sort_key
+        )
+        sorted_fixed_by_packages = sorted(
+            self.object.fixed_by_packages.all(), key=purl_sort_key
+        )
 
         all_affected_fixed_by_matches = []
         for sorted_affected_package in sorted_affected_packages:
             affected_fixed_by_matches = {}
-            affected_fixed_by_matches["affected_package"] = sorted_affected_package
+            affected_fixed_by_matches["affected_package"] = (
+                sorted_affected_package
+            )
             matched_fixed_by_packages = []
             for fixed_by_package in sorted_fixed_by_packages:
-                sorted_affected_version_class = get_purl_version_class(sorted_affected_package)
-                fixed_by_version_class = get_purl_version_class(fixed_by_package)
+                sorted_affected_version_class = get_purl_version_class(
+                    sorted_affected_package
+                )
+                fixed_by_version_class = get_purl_version_class(
+                    fixed_by_package
+                )
                 if (
                     (fixed_by_package.type == sorted_affected_package.type)
-                    and (fixed_by_package.namespace == sorted_affected_package.namespace)
+                    and (
+                        fixed_by_package.namespace
+                        == sorted_affected_package.namespace
+                    )
                     and (fixed_by_package.name == sorted_affected_package.name)
-                    and (fixed_by_package.qualifiers == sorted_affected_package.qualifiers)
-                    and (fixed_by_package.subpath == sorted_affected_package.subpath)
+                    and (
+                        fixed_by_package.qualifiers
+                        == sorted_affected_package.qualifiers
+                    )
+                    and (
+                        fixed_by_package.subpath
+                        == sorted_affected_package.subpath
+                    )
                     and (
                         fixed_by_version_class(fixed_by_package.version)
-                        > sorted_affected_version_class(sorted_affected_package.version)
+                        > sorted_affected_version_class(
+                            sorted_affected_package.version
+                        )
                     )
                 ):
                     matched_fixed_by_packages.append(fixed_by_package.purl)
-            affected_fixed_by_matches["matched_fixed_by_packages"] = matched_fixed_by_packages
+            affected_fixed_by_matches["matched_fixed_by_packages"] = (
+                matched_fixed_by_packages
+            )
             all_affected_fixed_by_matches.append(affected_fixed_by_matches)
 
         context.update(
             {
                 "vulnerability": self.object,
-                "vulnerability_search_form": VulnerabilitySearchForm(self.request.GET),
+                "vulnerability_search_form": VulnerabilitySearchForm(
+                    self.request.GET
+                ),
                 "severities": list(self.object.severities),
                 "severity_score_range": get_severity_range(severity_values),
                 "severity_vectors": severity_vectors,
@@ -236,10 +372,14 @@ class HomePage(View):
     def get(self, request):
         request_query = request.GET
         context = {
-            "vulnerability_search_form": VulnerabilitySearchForm(request_query),
+            "vulnerability_search_form": VulnerabilitySearchForm(
+                request_query
+            ),
             "package_search_form": PackageSearchForm(request_query),
         }
-        return render(request=request, template_name=self.template_name, context=context)
+        return render(
+            request=request, template_name=self.template_name, context=context
+        )
 
 
 email_template = """
@@ -253,8 +393,10 @@ Here is your API key:
 If you did NOT request this API key, you can either ignore this email or contact us at support@nexb.com and let us know in the forward that you did not request an API key.
 
 The API root is at https://public.vulnerablecode.io/api
-To learn more about using the VulnerableCode.io API, please refer to the live API documentation at https://public.vulnerablecode.io/api/docs
-To learn about VulnerableCode, refer to the general documentation at https://vulnerablecode.readthedocs.io
+To learn more about using the VulnerableCode.io API,
+please refer to the live API documentation at https://public.vulnerablecode.io/api/docs
+To learn about VulnerableCode, refer to the
+general documentation at https://vulnerablecode.readthedocs.io
 
 --
 Sincerely,
@@ -290,7 +432,8 @@ class ApiUserCreateView(generic.CreateView):
         )
 
         messages.success(
-            self.request, f"Your API key token has been sent to your email: {self.object.email}."
+            self.request,
+            f"Your API key token has been sent to your email: {self.object.email}.",
         )
 
         return response
