@@ -10,7 +10,6 @@ function handlePageSizeChange(value) {
     if (search) {
         params.set('search', search);
     }
-    
     const newUrl = `${window.location.pathname}?${params.toString()}`;
     if (window.location.href !== newUrl) {
         window.location.href = newUrl;
