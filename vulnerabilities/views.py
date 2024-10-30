@@ -97,6 +97,9 @@ class BaseSearchView(ListView):
         return context
 
 
+# views.py
+
+
 class PackageSearch(BaseSearchView):
     model = models.Package
     template_name = "packages.html"
@@ -104,31 +107,15 @@ class PackageSearch(BaseSearchView):
     ordering = ["type", "namespace", "name", "version"]
 
     def get_queryset(self, query=None):
-        """Return filtered and ordered package queryset."""
-        if query is not None:
-            return (
-                self.model.objects.search(query)
-                .with_vulnerability_counts()
-                .prefetch_related()
-                .order_by("package_url")
-            )
-
+        """Return search results from the form."""
         self.form = self.form_class(self.request.GET)
-        if not self.form.is_valid():
-            return self.model.objects.none()
-
-        return (
-            self.model.objects.search(self.form.cleaned_data.get("search", ""))
-            .with_vulnerability_counts()
-            .prefetch_related()
-            .order_by("package_url")
-        )
+        return self.form.search(query)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "package_search_form": getattr(self, "form", self.form_class()),
+                "package_search_form": self.form,
                 "search": self.request.GET.get("search"),
             }
         )
@@ -142,23 +129,15 @@ class VulnerabilitySearch(BaseSearchView):
     ordering = ["vulnerability_id"]
 
     def get_queryset(self, query=None):
-        """Return filtered vulnerability queryset."""
-        if query is not None:
-            return self.model.objects.search(query=query).with_package_counts()
-
+        """Return search results from the form."""
         self.form = self.form_class(self.request.GET)
-        if not self.form.is_valid():
-            return self.model.objects.none()
-
-        return self.model.objects.search(
-            query=self.form.cleaned_data.get("search", "")
-        ).with_package_counts()
+        return self.form.search(query)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(
             {
-                "vulnerability_search_form": getattr(self, "form", self.form_class()),
+                "vulnerability_search_form": self.form,
                 "search": self.request.GET.get("search"),
             }
         )

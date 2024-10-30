@@ -38,18 +38,35 @@ class PaginationForm(forms.Form):
     )
 
 
+# forms.py
+
+
 class BaseSearchForm(forms.Form):
     """Base form for implementing search functionality."""
 
     search = forms.CharField(required=True)
 
-    def search(self):
-        """Execute search based on form data."""
+    def search(self, query=None):
+        """
+        Execute search based on form data or direct query.
+
+        Args:
+            query (str, optional): Direct query for testing purposes
+        Returns:
+            QuerySet: Filtered and ordered queryset
+        """
+        if query is not None:
+            # Direct query mode (used in tests)
+            return self._perform_search(query)
+
         if not self.is_valid():
             return self.model.objects.none()
 
-        search_query = self.cleaned_data.get("search", "")
-        return self._search(search_query)
+        return self._perform_search(self.cleaned_data.get("search", ""))
+
+    def _perform_search(self, query):
+        """To be implemented by subclasses with specific search logic."""
+        raise NotImplementedError
 
 
 class PackageSearchForm(BaseSearchForm):
@@ -61,7 +78,7 @@ class PackageSearchForm(BaseSearchForm):
         ),
     )
 
-    def _search(self, query):
+    def _perform_search(self, query):
         """Execute package-specific search logic."""
         return (
             self.model.objects.search(query)
@@ -80,7 +97,7 @@ class VulnerabilitySearchForm(BaseSearchForm):
         ),
     )
 
-    def _search(self, query):
+    def _perform_search(self, query):
         """Execute vulnerability-specific search logic."""
         return self.model.objects.search(query=query).with_package_counts()
 
