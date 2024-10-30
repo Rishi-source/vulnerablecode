@@ -15,9 +15,6 @@ from cvss.exceptions import CVSS4MalformedError
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-from django.core.paginator import EmptyPage
-from django.core.paginator import PageNotAnInteger
-from django.core.paginator import Paginator
 from django.http.response import Http404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -34,7 +31,6 @@ from vulnerabilities.forms import ApiUserCreationForm
 from vulnerabilities.forms import PackageSearchForm
 from vulnerabilities.forms import PaginationForm
 from vulnerabilities.forms import VulnerabilitySearchForm
-from vulnerabilities.models import VulnerabilityStatusType
 from vulnerabilities.severity_systems import EPSS
 from vulnerabilities.severity_systems import SCORING_SYSTEMS
 from vulnerabilities.utils import get_severity_range
@@ -67,14 +63,20 @@ def get_purl_version_class(purl: models.Package):
     return purl_version_class
 
 
+# views.py
+
+
 class BaseSearchView(ListView):
     """Base view for implementing search functionality with pagination."""
 
     paginate_by = PAGE_SIZE
     max_page_size = MAX_PAGE_SIZE
 
-    def get_paginate_by(self, query=None):
-        """Get and validate the requested page size."""
+    def get_paginate_by(self, queryset=None):
+        """
+        Get and validate the requested page size.
+        Required 2 positional_argument get_paginate_by(positional_argument1, positional_argument2)
+        """
         try:
             page_size = int(self.request.GET.get("page_size", self.paginate_by))
             if page_size <= 0:
@@ -113,6 +115,7 @@ class PackageSearch(BaseSearchView):
         return self.model.objects.none()
 
     def get_context_data(self, **kwargs):
+        """Extends the template context with search form and search query for Packages."""
         context = super().get_context_data(**kwargs)
         if not hasattr(self, "form"):
             self.form = self.form_class()
@@ -144,7 +147,7 @@ class VulnerabilitySearch(BaseSearchView):
         return self.model.objects.none()
 
     def get_context_data(self, **kwargs):
-        """Extends the template context with search form and search query."""
+        """Extends the template context with search form and search query for Vulnerability."""
         context = super().get_context_data(**kwargs)
         if not hasattr(self, "form"):
             self.form = self.form_class()

@@ -49,7 +49,6 @@ class BaseSearchForm(forms.Form):
     def get_queryset(self, query=None):
         """
         Get queryset with search/filter/ordering applied.
-
         Args:
             query (str, optional): Direct query for testing
         """
@@ -60,10 +59,6 @@ class BaseSearchForm(forms.Form):
             return self.model.objects.none()
 
         return self._search(self.clean_search())
-
-    def _search(self):
-        """To be implemented by subclasses with specific search logic."""
-        raise NotImplementedError
 
 
 class PackageSearchForm(BaseSearchForm):
@@ -94,7 +89,7 @@ class VulnerabilitySearchForm(BaseSearchForm):
         ),
     )
 
-    def _perform_search(self, query):
+    def _search(self, query):
         """Execute vulnerability-specific search logic."""
         return self.model.objects.search(query=query).with_package_counts()
 
