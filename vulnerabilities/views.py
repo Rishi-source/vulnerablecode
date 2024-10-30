@@ -67,6 +67,9 @@ def get_purl_version_class(purl: models.Package):
     return purl_version_class
 
 
+# views.py
+
+
 class BaseSearchView(ListView):
     """Base view for implementing search functionality with pagination."""
 
@@ -74,11 +77,6 @@ class BaseSearchView(ListView):
     max_page_size = MAX_PAGE_SIZE
 
     def get_paginate_by(self, queryset=None):
-        """
-        This function would get and validate the page size from request parameters.
-        It returns a page size between 1 and max_page_size, defaulting to
-        self.paginate_by for invalid inputs.
-        """
         try:
             page_size = int(self.request.GET.get("page_size", self.paginate_by))
             if page_size <= 0:
@@ -97,9 +95,6 @@ class BaseSearchView(ListView):
         return context
 
 
-# views.py
-
-
 class PackageSearch(BaseSearchView):
     model = models.Package
     template_name = "packages.html"
@@ -107,16 +102,25 @@ class PackageSearch(BaseSearchView):
     ordering = ["type", "namespace", "name", "version"]
 
     def get_queryset(self, query=None):
-        """Return search results from the form."""
-        self.form = self.form_class(self.request.GET)
-        return self.form.search(query)
+        """Get queryset from form's search method."""
+        if query is not None:
+            form = self.form_class()
+            return form.get_queryset(query=query)
+
+        if hasattr(self, "request"):
+            self.form = self.form_class(self.request.GET)
+            return self.form.get_queryset()
+
+        return self.model.objects.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        if not hasattr(self, "form"):
+            self.form = self.form_class()
         context.update(
             {
                 "package_search_form": self.form,
-                "search": self.request.GET.get("search"),
+                "search": getattr(self.request, "GET", {}).get("search"),
             }
         )
         return context
@@ -129,16 +133,25 @@ class VulnerabilitySearch(BaseSearchView):
     ordering = ["vulnerability_id"]
 
     def get_queryset(self, query=None):
-        """Return search results from the form."""
-        self.form = self.form_class(self.request.GET)
-        return self.form.search(query)
+        """Get queryset from form's search method."""
+        if query is not None:
+            form = self.form_class()
+            return form.get_queryset(query=query)
+
+        if hasattr(self, "request"):
+            self.form = self.form_class(self.request.GET)
+            return self.form.get_queryset()
+
+        return self.model.objects.none()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        if not hasattr(self, "form"):
+            self.form = self.form_class()
         context.update(
             {
                 "vulnerability_search_form": self.form,
-                "search": self.request.GET.get("search"),
+                "search": getattr(self.request, "GET", {}).get("search"),
             }
         )
         return context

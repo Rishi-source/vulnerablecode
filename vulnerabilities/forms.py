@@ -38,31 +38,28 @@ class PaginationForm(forms.Form):
     )
 
 
-# forms.py
-
-
 class BaseSearchForm(forms.Form):
     """Base form for implementing search functionality."""
 
     search = forms.CharField(required=True)
 
-    def search(self, query=None):
+    def clean_search(self):
+        return self.cleaned_data.get("search", "")
+
+    def get_queryset(self, query=None):
         """
-        Execute search based on form data or direct query.
+        Get queryset with search/filter/ordering applied.
 
         Args:
-            query (str, optional): Direct query for testing purposes
-        Returns:
-            QuerySet: Filtered and ordered queryset
+            query (str, optional): Direct query for testing
         """
         if query is not None:
-            # Direct query mode (used in tests)
             return self._perform_search(query)
 
         if not self.is_valid():
             return self.model.objects.none()
 
-        return self._perform_search(self.cleaned_data.get("search", ""))
+        return self._perform_search(self.clean_search())
 
     def _perform_search(self, query):
         """To be implemented by subclasses with specific search logic."""
