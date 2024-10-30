@@ -15,6 +15,9 @@ from cvss.exceptions import CVSS4MalformedError
 from django.contrib import messages
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
+from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
+from django.core.paginator import Paginator
 from django.http.response import Http404
 from django.shortcuts import redirect
 from django.shortcuts import render
@@ -29,6 +32,7 @@ from univers.version_range import AlpineLinuxVersionRange
 from vulnerabilities import models
 from vulnerabilities.forms import ApiUserCreationForm
 from vulnerabilities.forms import PackageSearchForm
+from vulnerabilities.forms import PaginationForm
 from vulnerabilities.forms import VulnerabilitySearchForm
 from vulnerabilities.models import VulnerabilityStatusType
 from vulnerabilities.severity_systems import EPSS
@@ -37,6 +41,7 @@ from vulnerabilities.utils import get_severity_range
 from vulnerablecode.settings import env
 
 PAGE_SIZE = 20
+MAX_PAGE_SIZE = 100
 
 
 def purl_sort_key(purl: models.Package):
@@ -62,50 +67,82 @@ def get_purl_version_class(purl: models.Package):
     return purl_version_class
 
 
-class PackageSearch(ListView):
+class BaseSearchView(ListView):
+    """Base view for implementing search functionality with pagination."""
+
+    paginate_by = PAGE_SIZE
+    max_page_size = MAX_PAGE_SIZE
+
+    def get_paginate_by(self, queryset=None):
+        """
+        This function would get and validate the page size from request parameters.
+        It returns a page size between 1 and max_page_size, defaulting to
+        self.paginate_by for invalid inputs.
+        """
+        try:
+            page_size = int(self.request.GET.get("page_size", self.paginate_by))
+            if page_size <= 0:
+                return self.paginate_by
+            return min(page_size, self.max_page_size)
+        except (ValueError, TypeError):
+            return self.paginate_by
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update(
+            {
+                "pagination_form": PaginationForm(initial={"page_size": self.get_paginate_by()}),
+            }
+        )
+        return context
+
+
+class PackageSearch(BaseSearchView):
     model = models.Package
     template_name = "packages.html"
+    form_class = PackageSearchForm
     ordering = ["type", "namespace", "name", "version"]
-    paginate_by = PAGE_SIZE
+
+    def get_queryset(self):
+        """The Function Returns filtered and ordered package queryset."""
+        self.form = self.form_class(self.request.GET)
+        return self.form.search()
 
     def get_context_data(self, **kwargs):
+        """
+        Get the context data for template rendering.
+        Adds form and search parameters to context.
+        """
         context = super().get_context_data(**kwargs)
-        request_query = self.request.GET
-        context["package_search_form"] = PackageSearchForm(request_query)
-        context["search"] = request_query.get("search")
+        context.update(
+            {
+                "package_search_form": self.form,
+                "search": self.request.GET.get("search"),
+            }
+        )
         return context
 
-    def get_queryset(self, query=None):
-        """
-        Return a Package queryset for the ``query``.
-        Make a best effort approach to find matching packages either based
-        on exact purl, partial purl or just name and namespace.
-        """
-        query = query or self.request.GET.get("search") or ""
-        return (
-            self.model.objects.search(query)
-            .with_vulnerability_counts()
-            .prefetch_related()
-            .order_by("package_url")
-        )
 
-
-class VulnerabilitySearch(ListView):
+class VulnerabilitySearch(BaseSearchView):
     model = models.Vulnerability
     template_name = "vulnerabilities.html"
+    form_class = VulnerabilitySearchForm
     ordering = ["vulnerability_id"]
-    paginate_by = PAGE_SIZE
+
+    def get_queryset(self):
+        """Returns filtered vulnerability queryset."""
+        self.form = self.form_class(self.request.GET)
+        return self.form.search()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        request_query = self.request.GET
-        context["vulnerability_search_form"] = VulnerabilitySearchForm(request_query)
-        context["search"] = request_query.get("search")
+        context.update(
+            {
+                "vulnerability_search_form": self.form,
+                "search": self.request.GET.get("search"),
+            }
+        )
         return context
-
-    def get_queryset(self, query=None):
-        query = query or self.request.GET.get("search") or ""
-        return self.model.objects.search(query=query).with_package_counts()
 
 
 class PackageDetails(DetailView):
@@ -250,11 +287,15 @@ Here is your API key:
 
    Token {auth_token}
 
-If you did NOT request this API key, you can either ignore this email or contact us at support@nexb.com and let us know in the forward that you did not request an API key.
+If you did NOT request this API key, you can either ignore
+this email or contact us at support@nexb.com and let us know in the forward
+that you did not request an API key.
 
 The API root is at https://public.vulnerablecode.io/api
-To learn more about using the VulnerableCode.io API, please refer to the live API documentation at https://public.vulnerablecode.io/api/docs
-To learn about VulnerableCode, refer to the general documentation at https://vulnerablecode.readthedocs.io
+To learn more about using the VulnerableCode.io API,
+please refer to the live API documentation at https://public.vulnerablecode.io/api/docs
+To learn about VulnerableCode, refer to the
+general documentation at https://vulnerablecode.readthedocs.io
 
 --
 Sincerely,
