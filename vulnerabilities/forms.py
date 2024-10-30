@@ -43,11 +43,17 @@ class BaseSearchForm(forms.Form):
 
     search = forms.CharField(required=True)
 
-    def clean_search(self):
-        return self.cleaned_data.get("search", "")
+    def search(self):
+        """Execute search based on form data."""
+        if not self.is_valid():
+            return self.model.objects.none()
+
+        search_query = self.cleaned_data.get("search", "")
+        return self._search(search_query)
 
 
 class PackageSearchForm(BaseSearchForm):
+    model = Package
     search = forms.CharField(
         required=True,
         widget=forms.TextInput(
@@ -55,14 +61,28 @@ class PackageSearchForm(BaseSearchForm):
         ),
     )
 
+    def _search(self, query):
+        """Execute package-specific search logic."""
+        return (
+            self.model.objects.search(query)
+            .with_vulnerability_counts()
+            .prefetch_related()
+            .order_by("package_url")
+        )
+
 
 class VulnerabilitySearchForm(BaseSearchForm):
+    model = Vulnerability
     search = forms.CharField(
         required=True,
         widget=forms.TextInput(
             attrs={"placeholder": "Vulnerability id or alias such as CVE or GHSA"}
         ),
     )
+
+    def _search(self, query):
+        """Execute vulnerability-specific search logic."""
+        return self.model.objects.search(query=query).with_package_counts()
 
 
 class ApiUserCreationForm(forms.ModelForm):

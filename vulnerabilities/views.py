@@ -103,43 +103,12 @@ class PackageSearch(BaseSearchView):
     form_class = PackageSearchForm
     ordering = ["type", "namespace", "name", "version"]
 
-    def get_queryset(self, query=None):
-        """
-        Return a Package queryset based on search parameters.
-
-        Args:
-            query (str, optional): Direct search query, mainly used for testing.
-                                If not provided, uses form data from request.
-        Returns:
-            QuerySet: Filtered and ordered package queryset
-        """
-        if query is not None:
-            # Handle direct query (used in tests)
-            return (
-                self.model.objects.search(query)
-                .with_vulnerability_counts()
-                .prefetch_related()
-                .order_by("package_url")
-            )
-
-        # Handle form submission
+    def get_queryset(self):
+        """Return filtered and ordered package queryset."""
         self.form = self.form_class(self.request.GET)
-        if not self.form.is_valid():
-            return self.model.objects.none()
-
-        search_query = self.form.cleaned_data.get("search", "")
-        return (
-            self.model.objects.search(search_query)
-            .with_vulnerability_counts()
-            .prefetch_related()
-            .order_by("package_url")
-        )
+        return self.form.search()
 
     def get_context_data(self, **kwargs):
-        """
-        Get the context data for template rendering.
-        Adds form and search parameters to context.
-        """
         context = super().get_context_data(**kwargs)
         context.update(
             {
@@ -156,31 +125,12 @@ class VulnerabilitySearch(BaseSearchView):
     form_class = VulnerabilitySearchForm
     ordering = ["vulnerability_id"]
 
-    def get_queryset(self, query=None):
-        """
-        Return a Vulnerability queryset based on search parameters.
-
-        Args:
-            query (str, optional): Direct search query, mainly used for testing.
-                                If not provided, uses form data from request.
-        Returns:
-            QuerySet: Filtered vulnerability queryset
-        """
-        if query is not None:
-            return self.model.objects.search(query=query).with_package_counts()
-
+    def get_queryset(self):
+        """Return filtered vulnerability queryset."""
         self.form = self.form_class(self.request.GET)
-        if not self.form.is_valid():
-            return self.model.objects.none()
-
-        search_query = self.form.cleaned_data.get("search", "")
-        return self.model.objects.search(query=search_query).with_package_counts()
+        return self.form.search()
 
     def get_context_data(self, **kwargs):
-        """
-        Get the context data for template rendering.
-        Adds form and search parameters to context.
-        """
         context = super().get_context_data(**kwargs)
         context.update(
             {
@@ -333,15 +283,11 @@ Here is your API key:
 
    Token {auth_token}
 
-If you did NOT request this API key, you can either ignore
-this email or contact us at support@nexb.com and let us know in the forward
-that you did not request an API key.
+If you did NOT request this API key, you can either ignore this email or contact us at support@nexb.com and let us know in the forward that you did not request an API key.
 
 The API root is at https://public.vulnerablecode.io/api
-To learn more about using the VulnerableCode.io API,
-please refer to the live API documentation at https://public.vulnerablecode.io/api/docs
-To learn about VulnerableCode, refer to the
-general documentation at https://vulnerablecode.readthedocs.io
+To learn more about using the VulnerableCode.io API, please refer to the live API documentation at https://public.vulnerablecode.io/api/docs
+To learn about VulnerableCode, refer to the general documentation at https://vulnerablecode.readthedocs.io
 
 --
 Sincerely,
