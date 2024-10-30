@@ -54,14 +54,14 @@ class BaseSearchForm(forms.Form):
             query (str, optional): Direct query for testing
         """
         if query is not None:
-            return self._perform_search(query)
+            return self._search(query)
 
         if not self.is_valid():
             return self.model.objects.none()
 
-        return self._perform_search(self.clean_search())
+        return self._search(self.clean_search())
 
-    def _perform_search(self, query):
+    def _search(self):
         """To be implemented by subclasses with specific search logic."""
         raise NotImplementedError
 
@@ -75,7 +75,7 @@ class PackageSearchForm(BaseSearchForm):
         ),
     )
 
-    def _perform_search(self, query):
+    def _search(self, query):
         """Execute package-specific search logic."""
         return (
             self.model.objects.search(query)

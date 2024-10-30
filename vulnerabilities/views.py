@@ -67,16 +67,14 @@ def get_purl_version_class(purl: models.Package):
     return purl_version_class
 
 
-# views.py
-
-
 class BaseSearchView(ListView):
     """Base view for implementing search functionality with pagination."""
 
     paginate_by = PAGE_SIZE
     max_page_size = MAX_PAGE_SIZE
 
-    def get_paginate_by(self, queryset=None):
+    def get_paginate_by(self, query=None):
+        """Get and validate the requested page size."""
         try:
             page_size = int(self.request.GET.get("page_size", self.paginate_by))
             if page_size <= 0:
@@ -86,6 +84,7 @@ class BaseSearchView(ListView):
             return self.paginate_by
 
     def get_context_data(self, **kwargs):
+        """Add pagination form to the template context."""
         context = super().get_context_data(**kwargs)
         context.update(
             {
@@ -145,6 +144,7 @@ class VulnerabilitySearch(BaseSearchView):
         return self.model.objects.none()
 
     def get_context_data(self, **kwargs):
+        """Extends the template context with search form and search query."""
         context = super().get_context_data(**kwargs)
         if not hasattr(self, "form"):
             self.form = self.form_class()
