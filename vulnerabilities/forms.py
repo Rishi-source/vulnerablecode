@@ -14,13 +14,35 @@ from vulnerabilities.models import ApiUser
 
 
 class PackageSearchForm(forms.Form):
-
     search = forms.CharField(
         required=True,
         widget=forms.TextInput(
-            attrs={"placeholder": "Package name, purl or purl fragment"},
+            attrs={
+                "placeholder": "Package name, purl or purl fragment",
+            },
         ),
     )
+    type = forms.CharField(required=False, max_length=50)
+    vulnerable_only = forms.ChoiceField(
+        required=False,
+        choices=(
+            ("", "All Packages"),
+            ("true", "Vulnerable Only"),
+            ("false", "Non-Vulnerable Only"),
+        ),
+    )
+
+    def clean_search(self):
+        """Sanitize the search input which provide extra layer of protection from XSS attacks"""
+        search = self.cleaned_data["search"].strip()
+        if not search:
+            raise forms.ValidationError("Search field cannot be empty")
+        return search
+
+    def clean_type(self):
+        """Sanitize the type input which provide extra layer of protection from XSS attacks"""
+        pkg_type = self.cleaned_data["type"].strip()
+        return pkg_type
 
 
 class VulnerabilitySearchForm(forms.Form):

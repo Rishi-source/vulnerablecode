@@ -18,6 +18,12 @@ VulnerableCode Package Search
                 <div>
                     {{ page_obj.paginator.count|intcomma }} results
                 </div>
+                <select name="vulnerable_only" class="select" id="vulnerable-select">
+                    <option value="">All Packages</option>
+                    <option value="true" {% if request.GET.vulnerable_only == 'true' %}selected{% endif %}>Vulnerable Only</option>
+                    <option value="false" {% if request.GET.vulnerable_only == 'false' %}selected{% endif %}>Non-Vulnerable Only</option>
+                  </select>
+                  
                 {% if is_paginated %}
                     {% include 'includes/pagination.html' with page_obj=page_obj %}
                 {% endif %}
@@ -81,4 +87,28 @@ VulnerableCode Package Search
 
     </section>
 {% endif %}
-{% endblock %}
+<script>
+    // This script is used to update the URL when the user selects a value from the vulnerable_only dropdown menu.
+    // It also sanitize the URL to prevent XSS attacks.
+    document.getElementById('vulnerable-select').addEventListener('change', function() {
+        let searchParams = new URLSearchParams(window.location.search);
+        let selectedValue = this.value.replace(/[^a-zA-Z0-9]/g, '');
+        let searchTerm = searchParams.get('search');
+        if (searchTerm) {
+            searchTerm = encodeURIComponent(searchTerm);
+        }
+        if (selectedValue) {
+            searchParams.set('vulnerable_only', selectedValue);
+        } else {
+            searchParams.delete('vulnerable_only');
+        }
+        if (searchTerm) {
+            searchParams.set('search', searchTerm);
+        }
+        let newUrl = window.location.pathname + '?' + searchParams.toString();
+        if (newUrl.match(/^[^<>'"]*$/)) {  
+            window.location.href = newUrl;
+        }
+    });
+</script>
+    {% endblock %}

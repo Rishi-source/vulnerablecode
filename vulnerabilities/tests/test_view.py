@@ -127,6 +127,26 @@ class PackageSearchTestCase(TestCase):
             "pkg:nginx/nginx@1.9.5",
         ]
 
+    def test_package_search_vulnerable_only_filter(self):
+        vulnerable_pkg = Package.objects.create(type="npm", name="vulnerable-pkg", version="1.0.0")
+        non_vulnerable_pkg = Package.objects.create(
+            type="npm", name="non-vulnerable-pkg", version="2.0.0"
+        )
+        vuln = Vulnerability.objects.create(
+            vulnerability_id="VCID-123", summary="test vulnerability"
+        )
+        AffectedByPackageRelatedVulnerability.objects.create(
+            package=vulnerable_pkg, vulnerability=vuln
+        )
+        self.assertTrue(
+            AffectedByPackageRelatedVulnerability.objects.filter(package=vulnerable_pkg).exists()
+        )
+        self.assertFalse(
+            AffectedByPackageRelatedVulnerability.objects.filter(
+                package=non_vulnerable_pkg
+            ).exists()
+        )
+
     def test_package_view_with_valid_purl_and_incomplete_version(self):
         qs = PackageSearch().get_queryset(query="pkg:nginx/nginx@1")
         pkgs = list(qs)
