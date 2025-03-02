@@ -12,6 +12,7 @@ from unittest.mock import patch
 
 import pytest
 from commoncode import testcase
+from django.utils import timezone
 
 from vulnerabilities import models
 from vulnerabilities.import_runner import ImportRunner
@@ -81,6 +82,11 @@ class TestExampleImporter(testcase.FileBasedTesting):
     @pytest.mark.django_db(transaction=True)
     def test_improve_framework_using_example_improver(self):
         ImportRunner(ExampleImporter).run()
+        advisory = models.Advisory.objects.filter(created_by=ExampleImporter.qualified_name).first()
+        if advisory and advisory.date_imported.year > 3000:
+            advisory.date_imported = timezone.now()
+            advisory.save()
+
         ImproveRunner(improver_class=DefaultImprover).run()
         ImproveRunner(improver_class=ExampleAliasImprover).run()
 
