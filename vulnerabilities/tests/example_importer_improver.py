@@ -31,7 +31,6 @@ from vulnerabilities.severity_systems import SCORING_SYSTEMS
 class ExampleImporter(Importer):
 
     spdx_license_expression = "BSD-2-Clause"
-    license_url = "https://example.com/license"
     importer_name = "Example Importer"
 
     def advisory_data(self) -> Iterable[AdvisoryData]:
@@ -42,16 +41,6 @@ class ExampleImporter(Importer):
 
 def fetch_advisory_data():
     return [
-        {
-            "id": "CVE-2021-230171337",
-            "summary": "1-byte memory overwrite in resolver",
-            "advisory_severity": "medium",
-            "vulnerable": "0.6.18-1.20.0",
-            "fixed": "1.20.1",
-            "reference": "http://mailman.nginx.org/pipermail/nginx-announce/2021/000300.html",
-            "published_on": "14-02-2021 UTC",
-            "url": "http://example.com/cve-2021-1234",
-        },
         {
             "id": "CVE-2021-12341337",
             "summary": "Dummy advisory",
@@ -97,9 +86,7 @@ def parse_advisory_data(raw_data) -> AdvisoryData:
 class ExampleAliasImprover(Improver):
     @property
     def interesting_advisories(self) -> QuerySet:
-        return Advisory.objects.filter(created_by=ExampleImporter.qualified_name).exclude(
-            date_imported__year__gt=3000
-        )
+        return Advisory.objects.filter(created_by=ExampleImporter.qualified_name)
 
     def get_inferences(self, advisory_data) -> Iterable[Inference]:
         for alias in advisory_data.aliases:
@@ -130,7 +117,6 @@ class ExampleAliasImprover(Improver):
 
 def fetch_additional_aliases(alias):
     alias_map = {
-        "CVE-2021-230171337": ["PYSEC-1337", "CERTIN-1337"],
         "CVE-2021-12341337": ["ANONSEC-1337", "CERTDES-1337"],
     }
     return alias_map.get(alias)
