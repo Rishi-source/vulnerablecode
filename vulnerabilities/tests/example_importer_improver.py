@@ -31,6 +31,7 @@ from vulnerabilities.severity_systems import SCORING_SYSTEMS
 class ExampleImporter(Importer):
 
     spdx_license_expression = "BSD-2-Clause"
+    license_url = "https://example.com/license"
     importer_name = "Example Importer"
 
     def advisory_data(self) -> Iterable[AdvisoryData]:
@@ -96,13 +97,35 @@ def parse_advisory_data(raw_data) -> AdvisoryData:
 class ExampleAliasImprover(Improver):
     @property
     def interesting_advisories(self) -> QuerySet:
-        return Advisory.objects.filter(created_by=ExampleImporter.qualified_name)
+        return Advisory.objects.filter(created_by=ExampleImporter.qualified_name).exclude(
+            date_imported__year__gt=3000
+        )
 
     def get_inferences(self, advisory_data) -> Iterable[Inference]:
         for alias in advisory_data.aliases:
             new_aliases = fetch_additional_aliases(alias)
-            aliases = new_aliases + [alias]
-            yield Inference(aliases=aliases, confidence=MAX_CONFIDENCE)
+            if new_aliases:
+                aliases = new_aliases + [alias]
+                affected_purl = None
+                fixed_purl = None
+
+                for affected_package in advisory_data.affected_packages:
+                    if affected_package.package:
+                        affected_purl = affected_package.package
+                        if affected_package.fixed_version:
+                            fixed_purl = PackageURL(
+                                type=affected_package.package.type,
+                                namespace=affected_package.package.namespace,
+                                name=affected_package.package.name,
+                                version=str(affected_package.fixed_version),
+                            )
+                yield Inference(
+                    aliases=aliases,
+                    confidence=MAX_CONFIDENCE,
+                    affected_purls=[affected_purl] if affected_purl else [],
+                    fixed_purl=fixed_purl,
+                    summary=advisory_data.summary,
+                )
 
 
 def fetch_additional_aliases(alias):

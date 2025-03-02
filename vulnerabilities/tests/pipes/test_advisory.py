@@ -42,6 +42,7 @@ def get_advisory1(created_by="test_pipeline"):
         url=advisory_data1.url,
         created_by=created_by,
         date_collected=timezone.now(),
+        date_imported=timezone.now(),
     )
 
 

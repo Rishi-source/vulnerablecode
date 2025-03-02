@@ -29,8 +29,9 @@ from vulnerabilities.models import Weakness
 
 def insert_advisory(advisory: AdvisoryData, pipeline_id: str, logger: Callable = None):
     obj = None
+    created = False
     try:
-        obj, _ = Advisory.objects.get_or_create(
+        obj, created = Advisory.objects.get_or_create(
             aliases=advisory.aliases,
             summary=advisory.summary,
             affected_packages=[pkg.to_dict() for pkg in advisory.affected_packages],
@@ -43,6 +44,10 @@ def insert_advisory(advisory: AdvisoryData, pipeline_id: str, logger: Callable =
                 "date_collected": datetime.now(timezone.utc),
             },
         )
+        if created:
+            Advisory.objects.filter(id=obj.id).update(
+                date_imported=datetime(9999, 1, 1, tzinfo=timezone.utc)
+            )
     except Exception as e:
         if logger:
             logger(

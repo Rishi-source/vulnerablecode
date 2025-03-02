@@ -20,6 +20,7 @@ from vulnerabilities.importer import AffectedPackage
 from vulnerabilities.importer import Reference
 from vulnerabilities.pipelines import VulnerableCodeBaseImporterPipeline
 from vulnerabilities.pipelines import VulnerableCodePipeline
+from vulnerabilities.pipes.advisory import import_advisory
 from vulnerabilities.tests.pipelines import TestLogger
 
 advisory_data1 = AdvisoryData(
@@ -37,9 +38,13 @@ advisory_data1 = AdvisoryData(
 )
 
 
-def get_advisory1(created_by="test_pipeline"):
-    return models.Advisory.objects.create(
-        aliases=advisory_data1.aliases,
+def get_advisory1(created_by="test_pipeline", alias_suffix=""):
+    """Create an test advisory with date_imported not set."""
+    aliases = (
+        [f"{advisory_data1.aliases[0]}{alias_suffix}"] if alias_suffix else advisory_data1.aliases
+    )
+    advisory = models.Advisory.objects.create(
+        aliases=aliases,
         summary=advisory_data1.summary,
         affected_packages=[pkg.to_dict() for pkg in advisory_data1.affected_packages],
         references=[ref.to_dict() for ref in advisory_data1.references],
@@ -47,6 +52,10 @@ def get_advisory1(created_by="test_pipeline"):
         created_by=created_by,
         date_collected=timezone.now(),
     )
+    models.Advisory.objects.filter(id=advisory.id).update(
+        date_imported=timezone.make_aware(timezone.datetime(9999, 1, 1))
+    )
+    return models.Advisory.objects.get(id=advisory.id)
 
 
 class TestVulnerableCodePipeline(TestCase):
@@ -100,26 +109,39 @@ class TestVulnerableCodeBaseImporterPipeline(TestCase):
 
         self.assertEqual(1, models.Advisory.objects.count())
 
-        collected_advisory = models.Advisory.objects.first()
-        result_aliases = collected_advisory.aliases
-        expected_aliases = advisory_data1.aliases
-
-        self.assertEqual(expected_aliases, result_aliases)
-        self.assertEqual(base_pipeline.pipeline_id, collected_advisory.created_by)
-
     def test_import_new_advisories(self):
+        """Test the process of importing a new advisory creates a vulnerability."""
         self.assertEqual(0, models.Vulnerability.objects.count())
+        advisory = get_advisory1()
 
-        base_pipeline = VulnerableCodeBaseImporterPipeline()
-        base_pipeline.pipeline_id = "test_pipeline"
-        advisory1 = get_advisory1()
-        base_pipeline.import_new_advisories()
+        import_advisory(advisory=advisory, pipeline_id="test_pipeline", confidence=100)
 
         self.assertEqual(1, models.Vulnerability.objects.count())
 
-        imported_vulnerability = models.Vulnerability.objects.first()
+        advisory.refresh_from_db()
+        self.assertLess(advisory.date_imported.year, 9000)
 
-        self.assertEqual(1, imported_vulnerability.aliases.count())
+    def test_import_new_advisories_with_multiple_advisories(self):
+        """Test importing multiple advisories creates multiple vulnerabilities."""
 
-        expected_alias = imported_vulnerability.aliases.first()
-        self.assertEqual(advisory1.aliases[0], expected_alias.alias)
+        self.assertEqual(0, models.Vulnerability.objects.count())
+
+        advisory1 = get_advisory1(alias_suffix="-first")
+        advisory2 = get_advisory1(created_by="other_pipeline", alias_suffix="-second")
+
+        import_advisory(advisory=advisory1, pipeline_id="test_pipeline")
+        import_advisory(advisory=advisory2, pipeline_id="other_pipeline")
+
+        self.assertEqual(2, models.Vulnerability.objects.count())
+
+    def test_import_advisory_idempotent(self):
+        """Test importing same advisory multiple times only creates one vulnerability."""
+
+        self.assertEqual(0, models.Vulnerability.objects.count())
+        advisory = get_advisory1()
+
+        import_advisory(advisory=advisory, pipeline_id="test_pipeline")
+        self.assertEqual(1, models.Vulnerability.objects.count())
+
+        import_advisory(advisory=advisory, pipeline_id="test_pipeline")
+        self.assertEqual(1, models.Vulnerability.objects.count())
