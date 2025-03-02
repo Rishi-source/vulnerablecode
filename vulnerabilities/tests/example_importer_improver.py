@@ -50,7 +50,7 @@ def fetch_advisory_data():
             "reference": "http://example.com/cve-2021-1234",
             "published_on": "06-10-2021 UTC",
             "url": "http://example.com/cve-2021-1234",
-        },
+        }
     ]
 
 
@@ -93,25 +93,20 @@ class ExampleAliasImprover(Improver):
             new_aliases = fetch_additional_aliases(alias)
             if new_aliases:
                 aliases = new_aliases + [alias]
-                affected_purl = None
-                fixed_purl = None
 
-                for affected_package in advisory_data.affected_packages:
-                    if affected_package.package:
-                        affected_purl = affected_package.package
-                        if affected_package.fixed_version:
-                            fixed_purl = PackageURL(
-                                type=affected_package.package.type,
-                                namespace=affected_package.package.namespace,
-                                name=affected_package.package.name,
-                                version=str(affected_package.fixed_version),
-                            )
+                affected_purl1 = PackageURL(type="example", name="dummy_package", version="1.0.0")
+                affected_purl2 = PackageURL(type="example", name="dummy_package", version="1.1.0")
+                fixed_purl = PackageURL(type="example", name="dummy_package", version="1.2.0")
+
+                print(f"Generated PURLs: {affected_purl1}, {affected_purl2}, {fixed_purl}")
+
                 yield Inference(
                     aliases=aliases,
                     confidence=MAX_CONFIDENCE,
-                    affected_purls=[affected_purl] if affected_purl else [],
+                    affected_purls=[affected_purl1, affected_purl2],
                     fixed_purl=fixed_purl,
                     summary=advisory_data.summary,
+                    references=advisory_data.references,
                 )
 
 
