@@ -4,46 +4,27 @@ on: [push, pull_request]
 
 jobs:
   mypy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+      fail-fast: false
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Set up Python 3.8.11
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.8.11
+          python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          
-          pip install mypy==1.3.0 django-stubs==4.2.0 types-requests==2.30.0.0 types-PyYAML==6.0.12.10 types-toml==0.10.8.6
-          
-          pip install Django djangorestframework django-environ packageurl-python univers license-expression
+          python -m pip install --upgrade pip      
+          pip install -r type-requirements.txt  
+          pip install Django djangorestframework django-environ
 
-      - name: Create basic mypy config
+      - name: Run mypy
         run: |
-          cat > mypy_basic.ini << EOL
-          [mypy]
-          python_version = 3.8
-          warn_return_any = True
-          warn_unused_configs = True
-          disallow_untyped_defs = False
-          disallow_incomplete_defs = False
-          check_untyped_defs = True
-          disallow_untyped_decorators = False
-          no_implicit_optional = True
-          strict_optional = True
-
-          ignore_missing_imports = True
-          follow_imports = skip
-
-          [mypy-*.migrations.*]
-          ignore_errors = True
-          EOL
-
-      - name: Run mypy with basic config
-        run: |
-          mypy --config-file mypy_basic.ini vulnerabilities
+          mypy --config-file mypy.ini vulnerabilities
